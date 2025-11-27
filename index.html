@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RACHA V5 - SYNC FIX</title>
+    <title>RACHA FINAL - FUNCIONA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #0f172a; touch-action: none; font-family: 'Verdana', sans-serif; user-select: none; }
@@ -14,11 +14,11 @@
         @keyframes flash-red { 0%, 100% { background-color: #0f172a; } 50% { background-color: #ef4444; } }
 
         /* Botões Iniciais */
-        .btn-start { background: #ef4444; color: white; font-weight: 900; padding: 20px; border-radius: 15px; border: 3px solid #fff; width: 100%; margin-bottom: 15px; box-shadow: 0 5px 0 #991b1b; font-size: 1.2rem; }
-        .btn-start:active { transform: translateY(4px); box-shadow: none; }
+        .btn-start { background: #ef4444; color: white; font-weight: 900; padding: 20px; border-radius: 15px; border: 3px solid #fff; width: 100%; margin-bottom: 15px; box-shadow: 0 5px 0 #991b1b; font-size: 1.2rem; cursor: pointer; }
+        .btn-start:active { transform: translateY(4px); box-shadow: none; background: #dc2626; }
         
-        .btn-join { background: #3b82f6; color: white; font-weight: 900; padding: 20px; border-radius: 15px; border: 3px solid #fff; width: 100%; box-shadow: 0 5px 0 #1e40af; font-size: 1.2rem; }
-        .btn-join:active { transform: translateY(4px); box-shadow: none; }
+        .btn-join { background: #3b82f6; color: white; font-weight: 900; padding: 20px; border-radius: 15px; border: 3px solid #fff; width: 100%; box-shadow: 0 5px 0 #1e40af; font-size: 1.2rem; cursor: pointer; }
+        .btn-join:active { transform: translateY(4px); box-shadow: none; background: #2563eb; }
 
         /* Botões de Jogo */
         .btn-game { 
@@ -26,7 +26,6 @@
             padding: 8px 12px; border-radius: 8px; border: 1px solid #94a3b8;
             pointer-events: auto; text-transform: uppercase;
         }
-        .btn-music { background: #8b5cf6; border-color: #c4b5fd; }
 
         /* Controles Mobile */
         .touch-area {
@@ -52,7 +51,6 @@
 <body id="body">
 
     <!-- ÁUDIOS -->
-    <!-- Link alternativo de música Phonk/Eletrônica confiável -->
     <audio id="bgm" loop>
         <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/KieLoKaz/Free_Ganxta_Phonk_Tracks/KieLoKaz_-_01_-_Ganxta_Phonk_Session_1.mp3" type="audio/mpeg">
     </audio>
@@ -61,18 +59,22 @@
 
     <!-- LOBBY -->
     <div id="lobby" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-6 text-white interactive">
-        <h1 class="text-5xl font-black italic mb-2 text-yellow-400 drop-shadow-lg">RACHA V5</h1>
-        <p class="text-slate-400 mb-8 text-center text-sm">COMBINEM QUEM É QUEM!</p>
+        <h1 class="text-5xl font-black italic mb-2 text-yellow-400 drop-shadow-lg">RACHA V6</h1>
+        <p class="text-slate-400 mb-8 text-center text-sm">Versão com Configuração Manual</p>
         
         <div class="w-full max-w-sm flex flex-col gap-4">
             <input type="text" id="username" class="w-full bg-slate-800 border-2 border-slate-600 rounded-xl p-4 text-white font-bold uppercase text-center text-xl focus:border-yellow-400 outline-none" placeholder="SEU NOME">
             
-            <button onclick="startGame(1)" class="btn-start">
+            <button id="btn-p1" onclick="startGame(1)" class="btn-start">
                 🏎️ SOU O P1 (VERMELHO)
             </button>
-            <button onclick="startGame(2)" class="btn-join">
+            <button id="btn-p2" onclick="startGame(2)" class="btn-join">
                 🚙 SOU O P2 (AZUL)
             </button>
+            
+            <div id="loading-msg" class="hidden text-center text-yellow-400 font-bold animate-pulse">
+                ENTRANDO NA PISTA...
+            </div>
         </div>
     </div>
 
@@ -87,14 +89,13 @@
                     <div class="text-[10px] text-red-400 font-bold">P1 (RED)</div>
                     <div id="p1-laps" class="text-3xl font-black text-white">0</div>
                 </div>
-                <div id="debug-p1" class="debug-text">Wait...</div>
             </div>
 
             <!-- Controls Center -->
             <div class="flex flex-col items-center gap-2 mt-2">
                 <div id="game-msg" class="text-green-400 font-bold text-lg bg-black/60 px-4 py-1 rounded-full border border-green-500/30">ONLINE</div>
                 <div class="flex gap-2">
-                    <button onclick="toggleMusic()" class="btn-game btn-music interactive">🎵 MUSICA</button>
+                    <button onclick="toggleMusic()" class="btn-game interactive">🎵 MUSICA</button>
                     <button onclick="forceReset()" class="btn-game interactive">↺ RESET</button>
                 </div>
             </div>
@@ -105,7 +106,6 @@
                     <div class="text-[10px] text-blue-400 font-bold">P2 (BLUE)</div>
                     <div id="p2-laps" class="text-3xl font-black text-white">0</div>
                 </div>
-                <div id="debug-p2" class="debug-text">Wait...</div>
             </div>
         </div>
 
@@ -123,11 +123,27 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- CONFIGURAÇÃO ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // --- CONFIGURAÇÃO MANUAL (Isso garante que funcione) ---
+        // Se a config automatica falhar, usa a manual
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyBfVOCuakSWtU6O_d_XstGoDpAg8fC2_n4",
+            authDomain: "jogo-de-2-169d9.firebaseapp.com",
+            projectId: "jogo-de-2-169d9",
+            storageBucket: "jogo-de-2-169d9.firebasestorage.app",
+            messagingSenderId: "37135467278",
+            appId: "1:37135467278:web:e2e0cdec4c6dbcda768d5f"
+        };
+        
+        // Inicializa com tratamento de erro
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            console.log("Firebase conectado com sucesso");
+        } catch(e) {
+            alert("Erro fatal no Firebase: " + e.message);
+        }
 
         // --- ÁUDIO ---
         const bgm = document.getElementById('bgm');
@@ -137,7 +153,7 @@
 
         window.toggleMusic = () => {
             if (bgm.paused) {
-                bgm.play().then(() => alert("Música Ligada!")).catch(e => alert("Erro ao tocar música: " + e));
+                bgm.play().then(() => alert("Música Ligada!")).catch(e => alert("Erro ao tocar: " + e));
             } else {
                 bgm.pause();
             }
@@ -152,7 +168,7 @@
         const VIRTUAL_WIDTH = 800;
         const VIRTUAL_HEIGHT = 800;
         const TRACK_RADIUS = 320;
-        const TRACK_WIDTH = 120; // Pista mais larga
+        const TRACK_WIDTH = 120;
         const SAFE_INNER = TRACK_RADIUS - (TRACK_WIDTH/2) - 10;
         const SAFE_OUTER = TRACK_RADIUS + (TRACK_WIDTH/2) + 10;
         
@@ -160,7 +176,6 @@
         let isReady = false;
         let scaleFactor = 1;
         let lastCrashTime = 0;
-        let packetCount = 0;
 
         // Física
         const MAX_SPEED = 8.0;
@@ -178,7 +193,7 @@
         const keys = { left: false, right: false, up: false };
 
         // --- AUTH ---
-        signInAnonymously(auth).catch(e => console.error("Erro Auth:", e));
+        signInAnonymously(auth).catch(e => console.error("Auth Anonimo falhou:", e));
 
         // --- RESIZE ---
         function resize() {
@@ -190,30 +205,45 @@
         }
         window.addEventListener('resize', resize);
         
-        // --- START GAME ---
+        // --- START GAME (Função Global) ---
         window.startGame = async (id) => {
-            const nameInput = document.getElementById('username').value.trim() || `P${id}`;
-            myId = id;
-            
-            // UI Switch
-            document.getElementById('lobby').classList.add('hidden');
-            document.getElementById('game-ui').classList.remove('hidden');
-            if('ontouchstart' in window) {
-                document.getElementById('mobile-controls').classList.remove('hidden');
+            try {
+                // Feedback visual imediato
+                document.getElementById('loading-msg').classList.remove('hidden');
+                document.getElementById('btn-p1').disabled = true;
+                document.getElementById('btn-p2').disabled = true;
+
+                const nameInput = document.getElementById('username').value.trim() || `P${id}`;
+                myId = id;
+                
+                // Configuração inicial do estado local
+                resize();
+                resetMyPosition();
+                state[`p${myId}`].name = nameInput;
+
+                // Troca de Tela
+                document.getElementById('lobby').classList.add('hidden');
+                document.getElementById('game-ui').classList.remove('hidden');
+                
+                if('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                    document.getElementById('mobile-controls').classList.remove('hidden');
+                }
+
+                // Iniciar Loops
+                isReady = true;
+                requestAnimationFrame(loop);
+                setInterval(sendData, 60); 
+                setupListener();
+
+                // Tentar tocar música
+                bgm.play().catch(() => console.log("Audio precisa de toque"));
+
+            } catch(e) {
+                alert("Erro ao iniciar jogo: " + e.message);
+                document.getElementById('loading-msg').classList.add('hidden');
+                document.getElementById('btn-p1').disabled = false;
+                document.getElementById('btn-p2').disabled = false;
             }
-
-            resize();
-            resetMyPosition();
-            state[`p${myId}`].name = nameInput;
-
-            // Iniciar Loops
-            isReady = true;
-            requestAnimationFrame(loop);
-            setInterval(sendData, 60); // ~16 updates/sec
-            setupListener();
-
-            // Tentar tocar música
-            bgm.play().catch(() => console.log("Autoplay bloqueado"));
         };
 
         // --- REINICIAR TUDO (Reset Global) ---
@@ -221,7 +251,6 @@
             if(!isReady) return;
             const docRef = doc(db, 'corridas', 'sala_unica');
             try {
-                // Usa merge: true para atualizar apenas campos específicos
                 await setDoc(docRef, {
                     status: 'CRASHED',
                     lastCrash: Date.now(),
@@ -403,7 +432,7 @@
             requestAnimationFrame(loop);
         }
 
-        // --- NETWORKING (CRÍTICO) ---
+        // --- NETWORKING ---
         async function sendData() {
             if (!isReady) return;
             const docRef = doc(db, 'corridas', 'sala_unica');
@@ -422,7 +451,6 @@
             try {
                 // setDoc com merge garante que nao sobrescrevemos o objeto inteiro
                 await setDoc(docRef, payload, { merge: true });
-                packetCount++;
             } catch(e) { console.error("Erro envio:", e); }
         }
 
@@ -431,10 +459,6 @@
                 if (!snap.exists()) return;
                 const data = snap.data();
                 
-                // Debug na tela (Pra ver se ta recebendo dados)
-                if(data.p1) document.getElementById('debug-p1').innerText = `X:${data.p1.x} Y:${data.p1.y}`;
-                if(data.p2) document.getElementById('debug-p2').innerText = `X:${data.p2.x} Y:${data.p2.y}`;
-
                 // Crash Global
                 if (data.status === 'CRASHED' && data.lastCrash !== state.lastCrash) {
                     state.lastCrash = data.lastCrash;
