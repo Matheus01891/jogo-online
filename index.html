@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RACHA V7 - CORREÇÃO TOTAL</title>
+    <title>RACHA DOS IRMÃOS - V9 FINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #0f172a; touch-action: none; font-family: 'Verdana', sans-serif; user-select: none; }
@@ -14,17 +14,17 @@
         @keyframes flash-red { 0%, 100% { background-color: #0f172a; } 50% { background-color: #ef4444; } }
 
         /* Botões Iniciais */
-        .btn-start { background: #ef4444; color: white; font-weight: 900; padding: 20px; border-radius: 15px; border: 3px solid #fff; width: 100%; margin-bottom: 15px; box-shadow: 0 5px 0 #991b1b; font-size: 1.2rem; cursor: pointer; }
+        .btn-start { background: #ef4444; color: white; font-weight: 900; padding: 20px; border-radius: 15px; border: 3px solid #fff; width: 100%; margin-bottom: 15px; box-shadow: 0 5px 0 #991b1b; font-size: 1.2rem; cursor: pointer; position: relative; z-index: 50; }
         .btn-start:active { transform: translateY(4px); box-shadow: none; background: #dc2626; }
         
-        .btn-join { background: #3b82f6; color: white; font-weight: 900; padding: 20px; border-radius: 15px; border: 3px solid #fff; width: 100%; box-shadow: 0 5px 0 #1e40af; font-size: 1.2rem; cursor: pointer; }
+        .btn-join { background: #3b82f6; color: white; font-weight: 900; padding: 20px; border-radius: 15px; border: 3px solid #fff; width: 100%; box-shadow: 0 5px 0 #1e40af; font-size: 1.2rem; cursor: pointer; position: relative; z-index: 50; }
         .btn-join:active { transform: translateY(4px); box-shadow: none; background: #2563eb; }
 
         /* Botões de Jogo */
         .btn-game { 
             background: #334155; color: white; font-weight: bold; font-size: 12px;
             padding: 8px 12px; border-radius: 8px; border: 1px solid #94a3b8;
-            pointer-events: auto; text-transform: uppercase;
+            pointer-events: auto; text-transform: uppercase; cursor: pointer;
         }
 
         /* Controles Mobile */
@@ -33,12 +33,13 @@
             border-radius: 25px; border: 2px solid rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.1); pointer-events: auto;
             display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px); cursor: pointer;
+            user-select: none; -webkit-user-select: none;
         }
         .touch-area:active { background: rgba(255,255,255,0.3); border-color: #fff; }
         #btn-left { left: 15px; }
         #btn-right { right: 15px; }
-        .arrow { font-size: 60px; color: rgba(255,255,255,0.6); }
+        .arrow { font-size: 60px; color: rgba(255,255,255,0.6); pointer-events: none; }
 
         /* UI Overlay */
         .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; z-index: 10; }
@@ -51,7 +52,6 @@
 <body id="body">
 
     <!-- ÁUDIOS -->
-    <!-- Música Phonk hospedada em local acessível -->
     <audio id="bgm" loop>
         <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/KieLoKaz/Free_Ganxta_Phonk_Tracks/KieLoKaz_-_01_-_Ganxta_Phonk_Session_1.mp3" type="audio/mpeg">
     </audio>
@@ -60,22 +60,23 @@
 
     <!-- LOBBY -->
     <div id="lobby" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-6 text-white interactive">
-        <h1 class="text-5xl font-black italic mb-2 text-yellow-400 drop-shadow-lg">RACHA V7</h1>
-        <p class="text-slate-400 mb-8 text-center text-sm">Correção de Caminho de Dados</p>
+        <h1 class="text-5xl font-black italic mb-2 text-yellow-400 drop-shadow-lg">RACHA V9</h1>
+        <p class="text-slate-400 mb-8 text-center text-sm">Versão Final com Suas Chaves</p>
         
         <div class="w-full max-w-sm flex flex-col gap-4">
             <input type="text" id="username" class="w-full bg-slate-800 border-2 border-slate-600 rounded-xl p-4 text-white font-bold uppercase text-center text-xl focus:border-yellow-400 outline-none" placeholder="SEU NOME">
             
-            <button id="btn-p1" onclick="startGame(1)" class="btn-start">
+            <button id="btn-p1" onclick="window.startGame(1)" class="btn-start">
                 🏎️ SOU O P1 (VERMELHO)
             </button>
-            <button id="btn-p2" onclick="startGame(2)" class="btn-join">
+            <button id="btn-p2" onclick="window.startGame(2)" class="btn-join">
                 🚙 SOU O P2 (AZUL)
             </button>
             
             <div id="loading-msg" class="hidden text-center text-yellow-400 font-bold animate-pulse">
-                CONECTANDO...
+                INICIANDO...
             </div>
+            <p class="text-[10px] text-slate-500 text-center mt-4">Conectando ao jogo-de-2...</p>
         </div>
     </div>
 
@@ -90,13 +91,11 @@
                     <div class="text-[10px] text-red-400 font-bold">P1 (RED)</div>
                     <div id="p1-laps" class="text-3xl font-black text-white">0</div>
                 </div>
-                <!-- Debug visivel -->
-                <div id="debug-p1" class="debug-text">--</div>
             </div>
 
             <!-- Controls Center -->
             <div class="flex flex-col items-center gap-2 mt-2">
-                <div id="game-msg" class="text-green-400 font-bold text-lg bg-black/60 px-4 py-1 rounded-full border border-green-500/30">ONLINE</div>
+                <div id="game-status" class="text-yellow-400 font-bold text-xs bg-black/60 px-4 py-1 rounded-full border border-yellow-500/30">CONECTANDO...</div>
                 <div class="flex gap-2">
                     <button onclick="toggleMusic()" class="btn-game interactive">🎵 TOCAR</button>
                     <button onclick="forceReset()" class="btn-game interactive">↺ RESET</button>
@@ -109,13 +108,11 @@
                     <div class="text-[10px] text-blue-400 font-bold">P2 (BLUE)</div>
                     <div id="p2-laps" class="text-3xl font-black text-white">0</div>
                 </div>
-                <!-- Debug visivel -->
-                <div id="debug-p2" class="debug-text">--</div>
             </div>
         </div>
 
         <!-- Touch Controls -->
-        <div id="mobile-controls" class="hidden w-full h-full pointer-events-none">
+        <div id="mobile-controls" class="w-full h-full pointer-events-none">
             <div id="btn-left" class="touch-area"><span class="arrow">◄</span></div>
             <div id="btn-right" class="touch-area"><span class="arrow">►</span></div>
         </div>
@@ -125,15 +122,30 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- CONFIGURAÇÃO CORRETA ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- SUAS CHAVES DO FIREBASE (NÃO REMOVER!) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfVOCuakSWtU6O_d_XstGoDpAg8fC2_n4",
+            authDomain: "jogo-de-2-169d9.firebaseapp.com",
+            projectId: "jogo-de-2-169d9",
+            storageBucket: "jogo-de-2-169d9.firebasestorage.app",
+            messagingSenderId: "37135467278",
+            appId: "1:37135467278:web:e2e0cdec4c6dbcda768d5f"
+        };
+
+        // Inicialização
+        let app, auth, db, dbConnected = false;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            console.log("Firebase Init OK");
+        } catch (e) {
+            console.error("Firebase Init Fail", e);
+            alert("Erro nas Chaves do Firebase!");
+        }
 
         // --- ÁUDIO ---
         const bgm = document.getElementById('bgm');
@@ -141,23 +153,20 @@
         const sfxCrash = document.getElementById('sfx-crash');
         bgm.volume = 0.5;
 
-        // Função de música segura (sem crash)
         window.toggleMusic = () => {
             if (bgm.paused) {
-                bgm.play()
-                   .then(() => console.log("Tocando"))
-                   .catch(e => console.log("Erro música, aguardando clique"));
+                bgm.play().then(() => console.log("Tocando")).catch(e => alert("Toque na tela antes!"));
             } else {
                 bgm.pause();
             }
         };
 
-        // --- VARIÁVEIS ---
+        // --- VARIÁVEIS DO JOGO ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const body = document.getElementById('body');
         
-        // Dimensões Pista
+        // Dimensões
         const VIRTUAL_WIDTH = 800;
         const VIRTUAL_HEIGHT = 800;
         const TRACK_RADIUS = 320;
@@ -186,19 +195,32 @@
 
         const keys = { left: false, right: false, up: false };
 
-        // --- AUTH ---
-        const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        };
-        initAuth();
+        // --- AUTENTICAÇÃO ANÔNIMA ---
+        if (auth) {
+            signInAnonymously(auth).catch((error) => {
+                console.error("Erro no login anônimo:", error);
+                updateStatus("ERRO LOGIN", "red");
+            });
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) currentUser = user;
-        });
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    console.log("Logado como:", user.uid);
+                    currentUser = user;
+                    dbConnected = true;
+                    updateStatus("ONLINE", "green");
+                } else {
+                    updateStatus("DESCONECTADO", "red");
+                }
+            });
+        }
+
+        function updateStatus(text, color) {
+            const el = document.getElementById('game-status');
+            if(el) {
+                el.innerText = text;
+                el.className = `text-${color}-400 font-bold text-xs bg-black/60 px-4 py-1 rounded-full border border-${color}-500/30`;
+            }
+        }
 
         // --- RESIZE ---
         function resize() {
@@ -210,65 +232,53 @@
         }
         window.addEventListener('resize', resize);
         
-        // --- START GAME ---
-        window.startGame = async (id) => {
-            try {
-                if (!currentUser) {
-                    alert("Aguarde conectar...");
-                    return;
-                }
+        // --- INICIAR JOGO ---
+        window.startGame = (id) => {
+            console.log("Start Game ID:", id);
+            const nameInput = document.getElementById('username').value.trim() || `P${id}`;
+            myId = id;
+            
+            // UI
+            document.getElementById('lobby').classList.add('hidden');
+            document.getElementById('game-ui').classList.remove('hidden');
+            document.getElementById('mobile-controls').style.display = 'block';
 
-                document.getElementById('loading-msg').classList.remove('hidden');
-                document.getElementById('btn-p1').disabled = true;
-                document.getElementById('btn-p2').disabled = true;
+            resize();
+            resetMyPosition();
+            state[`p${myId}`].name = nameInput;
 
-                const nameInput = document.getElementById('username').value.trim() || `P${id}`;
-                myId = id;
-                
-                resize();
-                resetMyPosition();
-                state[`p${myId}`].name = nameInput;
+            isReady = true;
+            requestAnimationFrame(loop);
+            
+            // Sync Loop
+            setInterval(sendData, 40); 
+            setupListener();
 
-                // Troca Tela
-                document.getElementById('lobby').classList.add('hidden');
-                document.getElementById('game-ui').classList.remove('hidden');
-                
-                if('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-                    document.getElementById('mobile-controls').classList.remove('hidden');
-                }
-
-                isReady = true;
-                requestAnimationFrame(loop);
-                // Enviar dados mais rápido (40ms)
-                setInterval(sendData, 40); 
-                setupListener();
-
-                // Tentar música com tratamento de erro silencioso
-                bgm.play().catch(e => console.warn("Música bloqueada, use o botão"));
-
-            } catch(e) {
-                alert("Erro: " + e.message);
-                document.getElementById('loading-msg').classList.add('hidden');
-                document.getElementById('btn-p1').disabled = false;
-                document.getElementById('btn-p2').disabled = false;
-            }
+            // Música
+            bgm.play().catch(e => console.log("Musica precisa de clique"));
         };
 
-        // --- CAMINHO DO BANCO DE DADOS (CORRIGIDO) ---
-        // Aqui estava o erro! O caminho precisava ser artifacts/...
-        const getGameDoc = () => doc(db, 'artifacts', appId, 'public', 'data', 'sala_unica_v7');
+        // --- BANCO DE DADOS ---
+        // Usando o caminho da collection direta pois suas regras permitem
+        // Caso mude a regra para auth!=null, isso continua funcionando
+        const getGameDoc = () => doc(db, 'corridas', 'sala_unica_v9');
 
-        // --- RESET GLOBAL ---
+        // --- RESET ---
         window.forceReset = async () => {
             if(!isReady) return;
-            try {
-                await setDoc(getGameDoc(), {
-                    status: 'CRASHED',
-                    lastCrash: Date.now(),
-                    p1: { laps: 0 },
-                    p2: { laps: 0 }
-                }, { merge: true });
-            } catch(e) { console.error(e); }
+            state.p1.laps = 0; state.p2.laps = 0;
+            resetMyPosition();
+            
+            if (dbConnected) {
+                try {
+                    await setDoc(getGameDoc(), {
+                        status: 'CRASHED',
+                        lastCrash: Date.now(),
+                        p1: { laps: 0 },
+                        p2: { laps: 0 }
+                    }, { merge: true });
+                } catch(e) {}
+            }
         };
 
         function resetMyPosition() {
@@ -292,18 +302,26 @@
             if(e.key === 'ArrowUp') keys.up = false;
         });
 
-        const handleTouch = (dir, active) => {
+        const handleInput = (dir, active) => {
             if(dir === 'left') keys.left = active;
             if(dir === 'right') keys.right = active;
             keys.up = (keys.left || keys.right); 
         };
+
         const bl = document.getElementById('btn-left');
         const br = document.getElementById('btn-right');
         
-        bl.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('left', true); });
-        bl.addEventListener('touchend', (e) => { e.preventDefault(); handleTouch('left', false); });
-        br.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('right', true); });
-        br.addEventListener('touchend', (e) => { e.preventDefault(); handleTouch('right', false); });
+        bl.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput('left', true); });
+        bl.addEventListener('touchend', (e) => { e.preventDefault(); handleInput('left', false); });
+        br.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput('right', true); });
+        br.addEventListener('touchend', (e) => { e.preventDefault(); handleInput('right', false); });
+        
+        bl.addEventListener('mousedown', (e) => { e.preventDefault(); handleInput('left', true); });
+        bl.addEventListener('mouseup', (e) => { e.preventDefault(); handleInput('left', false); });
+        br.addEventListener('mousedown', (e) => { e.preventDefault(); handleInput('right', true); });
+        br.addEventListener('mouseup', (e) => { e.preventDefault(); handleInput('right', false); });
+        bl.addEventListener('mouseleave', () => handleInput('left', false));
+        br.addEventListener('mouseleave', () => handleInput('right', false));
 
         // --- LÓGICA ---
         function updatePhysics() {
@@ -321,7 +339,6 @@
             p.x += Math.cos(p.angle) * p.speed;
             p.y += Math.sin(p.angle) * p.speed;
 
-            // Crash Check
             const dx = p.x - VIRTUAL_WIDTH/2;
             const dy = p.y - VIRTUAL_HEIGHT/2;
             const dist = Math.sqrt(dx*dx + dy*dy);
@@ -399,7 +416,6 @@
             ctx.beginPath(); ctx.arc(cx, cy, SAFE_INNER, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill();
             ctx.beginPath(); ctx.arc(cx, cy, SAFE_INNER - 10, 0, Math.PI*2); ctx.fillStyle = '#0f172a'; ctx.fill();
 
-            // Chegada
             ctx.lineWidth = 12; ctx.strokeStyle = '#fbbf24'; 
             ctx.beginPath(); ctx.moveTo(cx, cy + TRACK_RADIUS - 50); ctx.lineTo(cx, cy + TRACK_RADIUS + 50); ctx.stroke();
 
@@ -436,9 +452,9 @@
             requestAnimationFrame(loop);
         }
 
-        // --- NETWORKING (DADOS ENVIADOS CORRETAMENTE) ---
+        // --- NETWORKING ---
         async function sendData() {
-            if (!isReady || !currentUser) return;
+            if (!isReady || !currentUser || !dbConnected) return;
             
             const myData = {
                 x: Math.round(state[`p${myId}`].x),
@@ -452,20 +468,17 @@
             payload[`p${myId}`] = myData;
 
             try {
-                // Usando o caminho CORRETO getGameDoc()
                 await setDoc(getGameDoc(), payload, { merge: true });
             } catch(e) { console.error("Erro envio:", e); }
         }
 
         function setupListener() {
+            if (!dbConnected) return;
+
             onSnapshot(getGameDoc(), (snap) => {
                 if (!snap.exists()) return;
                 const data = snap.data();
                 
-                // Debug na tela (Pra ver se ta recebendo dados)
-                if(data.p1) document.getElementById('debug-p1').innerText = `Sync: ${data.p1.x}, ${data.p1.y}`;
-                if(data.p2) document.getElementById('debug-p2').innerText = `Sync: ${data.p2.x}, ${data.p2.y}`;
-
                 if (data.status === 'CRASHED' && data.lastCrash !== state.lastCrash) {
                     state.lastCrash = data.lastCrash;
                     sfxCrash.play().catch(()=>{});
@@ -489,7 +502,6 @@
                     state[enemyKey].angle = enemyData.angle;
                     state[enemyKey].name = enemyData.name;
                     state[enemyKey].laps = enemyData.laps;
-                    document.getElementById(`${enemyKey}-laps`).innerText = enemyData.laps;
                 }
                 
                 if(data[`p${myId}`]) {
@@ -497,7 +509,8 @@
                          state[`p${myId}`].laps = 0;
                      }
                 }
-                document.getElementById(`p${myId}-laps`).innerText = state[`p${myId}`].laps;
+                document.getElementById(`p1-laps`).innerText = state.p1.laps;
+                document.getElementById(`p2-laps`).innerText = state.p2.laps;
             });
         }
     </script>
