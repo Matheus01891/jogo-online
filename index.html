@@ -85,12 +85,24 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- FIREBASE CONFIG ---
-        const firebaseConfig = JSON.parse(__firebase_config);
+        // --- FIREBASE CONFIG (EDITAR AQUI) ---
+        // Se estiveres a testar neste editor, ele usará a config automática (__firebase_config).
+        // Se fores colocar no teu próprio site, substitui os valores abaixo pelos do teu projeto Firebase.
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyBfVOCuakSWtU6O_d_XstGoDpAg8fC2_n4",
+            authDomain: "jogo-de-2-169d9.firebaseapp.com",
+            projectId: "jogo-de-2-169d9",
+            storageBucket: "jogo-de-2-169d9.firebasestorage.app",
+            messagingSenderId: "37135467278",
+            appId: "1:37135467278:web:e2e0cdec4c6dbcda768d5f"
+        };
+        
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
+        // Use um ID padrão se não estiver no ambiente de teste
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-race-game';
 
         // --- VARIÁVEIS DO JOGO ---
         const canvas = document.getElementById('gameCanvas');
