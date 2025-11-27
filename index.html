@@ -3,28 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RACHA V3 - FINAL FIX</title>
+    <title>RACHA V4 - SEM BLOQUEIO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #0f172a; touch-action: none; font-family: 'Verdana', sans-serif; user-select: none; }
         canvas { display: block; margin: auto; }
         
         /* Efeitos Visuais */
-        .neon-text { text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.5); }
         .crash-flash { animation: flash-red 0.5s ease-in-out; }
-        
-        @keyframes flash-red {
-            0%, 100% { background-color: #0f172a; }
-            50% { background-color: #ef4444; }
-        }
+        @keyframes flash-red { 0%, 100% { background-color: #0f172a; } 50% { background-color: #ef4444; } }
 
         /* Botões */
-        .btn-start { background: linear-gradient(to bottom, #ef4444, #b91c1c); box-shadow: 0 4px 0 #7f1d1d; }
-        .btn-start:active { transform: translateY(4px); box-shadow: 0 0 0 #7f1d1d; }
-        .btn-join { background: linear-gradient(to bottom, #3b82f6, #1d4ed8); box-shadow: 0 4px 0 #1e3a8a; }
-        .btn-join:active { transform: translateY(4px); box-shadow: 0 0 0 #1e3a8a; }
+        .btn-start { background: #ef4444; color: white; font-weight: 900; padding: 15px; border-radius: 12px; border: 2px solid #fff; width: 100%; margin-bottom: 10px; box-shadow: 0 4px 0 #991b1b; }
+        .btn-start:active { transform: translateY(4px); box-shadow: none; }
         
-        .btn-force { background: #eab308; color: black; font-weight: 900; border: 2px solid #fff; padding: 10px 20px; border-radius: 50px; box-shadow: 0 0 15px #eab308; animation: pulse 1s infinite; pointer-events: auto; }
+        .btn-join { background: #3b82f6; color: white; font-weight: 900; padding: 15px; border-radius: 12px; border: 2px solid #fff; width: 100%; box-shadow: 0 4px 0 #1e40af; }
+        .btn-join:active { transform: translateY(4px); box-shadow: none; }
+
+        /* Botão Reiniciar (Pequeno no topo) */
+        .btn-reset { 
+            background: #eab308; color: black; font-weight: bold; font-size: 10px;
+            padding: 4px 8px; border-radius: 4px; border: 1px solid white;
+            pointer-events: auto; text-transform: uppercase;
+        }
 
         /* Controles Mobile */
         .touch-area {
@@ -56,53 +57,44 @@
         <source src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- LOBBY -->
-    <div id="lobby" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-4 text-white interactive">
-        <h1 class="text-5xl font-black italic tracking-tighter mb-2 text-yellow-400 neon-text">RACHA V3</h1>
-        <p class="text-slate-400 mb-8 text-center text-sm">Correção de Conexão + Botão de Forçar</p>
+    <!-- LOBBY SIMPLIFICADO -->
+    <div id="lobby" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-6 text-white interactive">
+        <h1 class="text-4xl font-black italic mb-2 text-yellow-400">RACHA V4</h1>
+        <p class="text-slate-400 mb-6 text-center text-xs">SEM ESPERA - ENTROU, JOGOU</p>
         
-        <div class="bg-slate-800 p-6 rounded-2xl w-full max-w-sm border border-slate-700 shadow-xl relative">
-            <div id="status-dot" class="w-3 h-3 rounded-full bg-red-500 absolute top-6 right-6 animate-pulse" title="Status Conexão"></div>
+        <div class="w-full max-w-xs">
+            <input type="text" id="username" class="w-full bg-slate-800 border border-slate-600 rounded p-3 mb-4 text-white font-bold uppercase text-center" placeholder="SEU NOME">
             
-            <label class="text-xs text-slate-400 uppercase font-bold ml-1">Seu Piloto</label>
-            <input type="text" id="username" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 mb-6 text-white font-bold outline-none focus:border-yellow-500 uppercase" placeholder="APELIDO...">
-
-            <div class="flex flex-col gap-3">
-                <button onclick="startGame(1)" class="btn-start text-white font-black py-4 rounded-xl text-xl w-full interactive">
-                    CRIAR SALA (P1)
-                </button>
-                <button onclick="startGame(2)" class="btn-join text-white font-black py-4 rounded-xl text-xl w-full interactive">
-                    ENTRAR (P2)
-                </button>
-            </div>
+            <button onclick="startGame(1)" class="btn-start">SOU O PLAYER 1 (VERMELHO)</button>
+            <button onclick="startGame(2)" class="btn-join">SOU O PLAYER 2 (AZUL)</button>
             
             <div class="mt-4 flex items-center justify-center gap-2">
                 <input type="checkbox" id="music-toggle" checked class="w-4 h-4">
-                <label for="music-toggle" class="text-xs text-slate-400">Ativar Música</label>
+                <label for="music-toggle" class="text-xs text-slate-400">Música Ligada</label>
             </div>
         </div>
     </div>
 
-    <!-- HUD -->
+    <!-- HUD DO JOGO -->
     <div id="game-ui" class="ui-layer hidden">
-        <div class="flex justify-between w-full max-w-2xl mx-auto pt-2 relative">
-            <div class="bg-slate-900/90 border-l-4 border-red-500 p-2 rounded w-24 text-center shadow-lg">
+        <!-- Placar Topo -->
+        <div class="flex justify-between items-start w-full max-w-2xl mx-auto">
+            <!-- P1 Score -->
+            <div class="bg-slate-900/90 border-l-4 border-red-500 p-2 rounded w-20 text-center">
                 <div class="text-[10px] text-red-400 font-bold">P1</div>
-                <div id="p1-laps" class="text-2xl font-black text-white">0</div>
+                <div id="p1-laps" class="text-xl font-black text-white">0</div>
             </div>
 
-            <div class="flex flex-col items-center pt-2">
-                <div id="game-msg" class="text-yellow-400 font-bold text-lg drop-shadow-md animate-pulse">AGUARDANDO...</div>
-                
-                <!-- BOTÃO DE EMERGÊNCIA (Aparece só para P1 se travar) -->
-                <button id="force-start-btn" onclick="forceStart()" class="btn-force hidden mt-4">
-                    FORÇAR INÍCIO ⚡
-                </button>
+            <!-- Status Central e Botão Reset -->
+            <div class="flex flex-col items-center gap-2">
+                <div id="game-msg" class="text-green-500 font-bold text-sm bg-black/50 px-3 py-1 rounded-full">JOGO ATIVO</div>
+                <button onclick="forceReset()" class="btn-reset interactive">REINICIAR TUDO ↻</button>
             </div>
 
-            <div class="bg-slate-900/90 border-r-4 border-blue-500 p-2 rounded w-24 text-center shadow-lg">
+            <!-- P2 Score -->
+            <div class="bg-slate-900/90 border-r-4 border-blue-500 p-2 rounded w-20 text-center">
                 <div class="text-[10px] text-blue-400 font-bold">P2</div>
-                <div id="p2-laps" class="text-2xl font-black text-white">0</div>
+                <div id="p2-laps" class="text-xl font-black text-white">0</div>
             </div>
         </div>
 
@@ -117,8 +109,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- CONFIGURAÇÃO ---
         const firebaseConfig = {
@@ -140,38 +132,42 @@
         const sfxCrash = document.getElementById('sfx-crash');
         bgm.volume = 0.4;
 
-        // --- VARIÁVEIS ---
+        // --- VARIÁVEIS DO JOGO ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const body = document.getElementById('body');
         
+        // Pista
         const VIRTUAL_WIDTH = 800;
         const VIRTUAL_HEIGHT = 800;
         const TRACK_RADIUS = 320;
         const TRACK_WIDTH = 100;
-        const SAFE_INNER = TRACK_RADIUS - (TRACK_WIDTH/2) - 10;
-        const SAFE_OUTER = TRACK_RADIUS + (TRACK_WIDTH/2) + 10;
+        const SAFE_INNER = TRACK_RADIUS - (TRACK_WIDTH/2) - 15; // Margem extra de segurança
+        const SAFE_OUTER = TRACK_RADIUS + (TRACK_WIDTH/2) + 15;
         
         let myId = 0; 
         let isReady = false;
         let scaleFactor = 1;
         let lastCrashTime = 0;
 
-        // Física
-        const MAX_SPEED = 7.5;
-        const ACCEL = 0.25;
-        const TURN_SPEED = 0.09;
-        const FRICTION = 0.96;
+        // Física (Ajustada para ser mais controlável)
+        const MAX_SPEED = 7.0;
+        const ACCEL = 0.3;
+        const TURN_SPEED = 0.08;
+        const FRICTION = 0.95;
 
+        // Estado Local
         const state = {
             p1: { x: 0, y: 0, angle: 0, speed: 0, laps: 0, name: 'P1' },
             p2: { x: 0, y: 0, angle: 0, speed: 0, laps: 0, name: 'P2' },
-            status: 'WAITING',
-            winner: null,
+            status: 'RACING', // Sempre RACING, nunca WAITING
             lastCrash: 0
         };
 
         const keys = { left: false, right: false, up: false };
+
+        // --- AUTH SIMPLES ---
+        signInAnonymously(auth).catch(console.error);
 
         // --- RESIZE ---
         function resize() {
@@ -182,90 +178,78 @@
             scaleFactor = Math.min(scaleX, scaleY) * 0.95;
         }
         window.addEventListener('resize', resize);
-        // Chama resize algumas vezes para garantir que mobile carregou UI
-        setTimeout(resize, 100);
-        setTimeout(resize, 500);
-
-        // --- AUTH ---
-        signInAnonymously(auth).catch(console.error);
-        onAuthStateChanged(auth, (user) => {
-            if (user) document.getElementById('status-dot').classList.replace('bg-red-500', 'bg-green-500');
-        });
-
-        // --- START ---
+        
+        // --- INICIAR JOGO (SEM ESPERA) ---
         window.startGame = async (id) => {
-            const nameInput = document.getElementById('username').value.trim();
-            if (!nameInput) return alert("DIGITE UM NOME!");
-
-            if (document.getElementById('music-toggle').checked) {
-                bgm.play().catch(e => console.log("Toque na tela para música"));
-            }
+            const nameInput = document.getElementById('username').value.trim() || `PLAYER ${id}`;
             
+            // Música
+            if (document.getElementById('music-toggle').checked) {
+                bgm.play().catch(e => console.log("Toque para música"));
+            }
+
             myId = id;
+            
+            // UI
             document.getElementById('lobby').classList.add('hidden');
             document.getElementById('game-ui').classList.remove('hidden');
-
-            // Mostrar botão de forçar para o P1 depois de 3 segundos se ainda estiver esperando
-            if (myId === 1) {
-                setTimeout(() => {
-                    const msg = document.getElementById('game-msg').innerText;
-                    if (msg.includes("AGUARDANDO")) {
-                        document.getElementById('force-start-btn').classList.remove('hidden');
-                    }
-                }, 3000);
-            }
-
             if('ontouchstart' in window) {
                 document.getElementById('mobile-controls').classList.remove('hidden');
             }
 
+            // Garante o resize
+            resize();
+
+            // Posição Inicial
             resetMyPosition();
+            state[`p${myId}`].name = nameInput;
 
-            const docRef = doc(db, 'corridas', 'sala_unica');
-            const myData = { ...state[`p${myId}`], name: nameInput, active: true }; // Adicionamos 'active'
-
-            // P1 Reinicia a sala
-            if (myId === 1) {
-                await setDoc(docRef, { 
-                    p1: myData, 
-                    // NÃO zeramos o P2 aqui para evitar kickar ele se ele já conectou
-                    status: 'WAITING', 
-                    winner: null,
-                    lastCrash: 0
-                }, { merge: true });
-            } else {
-                // P2 apenas entra e diz que está ativo
-                await setDoc(docRef, { 
-                    p2: myData,
-                    // P2 NÃO muda o status sozinho, deixa P1 decidir
-                }, { merge: true });
-                
-                document.getElementById('game-msg').innerText = "CONECTANDO...";
-            }
-
+            // Inicia Loops IMEDIATAMENTE (Não espera rede)
             isReady = true;
-            setupListener();
             requestAnimationFrame(loop);
-            setInterval(sendData, 50);
+            setInterval(sendData, 50); // Sync rede
+            setupListener(); // Ouve rede
+
+            // Atualiza Banco (Sem travar)
+            const docRef = doc(db, 'corridas', 'sala_unica');
+            const myData = { 
+                x: state[`p${myId}`].x, 
+                y: state[`p${myId}`].y, 
+                angle: 0, 
+                laps: 0,
+                name: nameInput 
+            };
+            
+            // Apenas atualiza meus dados, não mexe no status global para não travar o outro
+            try {
+                const updatePayload = {};
+                updatePayload[`p${myId}`] = myData;
+                await setDoc(docRef, updatePayload, { merge: true });
+            } catch(e) { console.log("Erro inicial rede", e); }
         };
 
-        // Função para o P1 forçar o início
-        window.forceStart = async () => {
-             const docRef = doc(db, 'corridas', 'sala_unica');
-             await updateDoc(docRef, { status: 'RACING' });
-             document.getElementById('force-start-btn').classList.add('hidden');
+        // --- BOTÃO DE REINICIAR TUDO ---
+        window.forceReset = async () => {
+            const docRef = doc(db, 'corridas', 'sala_unica');
+            await updateDoc(docRef, {
+                status: 'CRASHED',
+                lastCrash: Date.now(),
+                'p1.laps': 0,
+                'p2.laps': 0
+            });
         };
 
         function resetMyPosition() {
             const startY = VIRTUAL_HEIGHT/2 + TRACK_RADIUS - 40;
             const p = state[`p${myId}`];
+            // P1 Esquerda, P2 Direita
             p.x = (myId === 1) ? VIRTUAL_WIDTH/2 - 30 : VIRTUAL_WIDTH/2 + 30;
             p.y = startY;
             p.angle = 0; 
             p.speed = 0;
         }
 
-        // --- INPUTS ---
+        // --- CONTROLES ---
         window.addEventListener('keydown', e => {
             if(e.key === 'ArrowLeft') keys.left = true;
             if(e.key === 'ArrowRight') keys.right = true;
@@ -277,22 +261,21 @@
             if(e.key === 'ArrowUp') keys.up = false;
         });
 
-        const btnLeft = document.getElementById('btn-left');
-        const btnRight = document.getElementById('btn-right');
         const handleTouch = (dir, active) => {
             if(dir === 'left') keys.left = active;
             if(dir === 'right') keys.right = active;
             keys.up = (keys.left || keys.right); 
         };
-        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('left', true); });
-        btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); handleTouch('left', false); });
-        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('right', true); });
-        btnRight.addEventListener('touchend', (e) => { e.preventDefault(); handleTouch('right', false); });
+        document.getElementById('btn-left').addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('left', true); });
+        document.getElementById('btn-left').addEventListener('touchend', (e) => { e.preventDefault(); handleTouch('left', false); });
+        document.getElementById('btn-right').addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('right', true); });
+        document.getElementById('btn-right').addEventListener('touchend', (e) => { e.preventDefault(); handleTouch('right', false); });
 
-        // --- LÓGICA ---
+        // --- LÓGICA DO JOGO ---
         function updatePhysics() {
             const p = state[`p${myId}`];
             
+            // Movimento
             if (keys.up) p.speed += ACCEL;
             p.speed *= FRICTION;
             if (p.speed > MAX_SPEED) p.speed = MAX_SPEED;
@@ -305,36 +288,49 @@
             p.x += Math.cos(p.angle) * p.speed;
             p.y += Math.sin(p.angle) * p.speed;
 
-            // Crash Check
+            // Verificar se saiu da pista (Crash)
             const dx = p.x - VIRTUAL_WIDTH/2;
             const dy = p.y - VIRTUAL_HEIGHT/2;
             const dist = Math.sqrt(dx*dx + dy*dy);
 
-            if (state.status === 'RACING' && (dist < SAFE_INNER || dist > SAFE_OUTER)) {
-                triggerGlobalReset();
-                return;
+            // Se bater na grama
+            if (dist < SAFE_INNER || dist > SAFE_OUTER) {
+                triggerLocalCrash(); // Apenas reseta a mim mesmo localmente primeiro
+                triggerGlobalReset(); // Tenta avisar todos
             }
 
+            // Voltas
             checkLaps(p);
+        }
+
+        // Reset Local Imediato (Para não ficar preso na grama)
+        function triggerLocalCrash() {
+            resetMyPosition();
+            sfxCrash.play();
+            body.classList.add('crash-flash');
+            setTimeout(() => body.classList.remove('crash-flash'), 500);
         }
 
         async function triggerGlobalReset() {
             if (Date.now() - lastCrashTime < 2000) return;
             lastCrashTime = Date.now();
             
-            resetMyPosition();
+            // Avisa o banco
             const docRef = doc(db, 'corridas', 'sala_unica');
-            await updateDoc(docRef, {
-                status: 'CRASHED',
-                lastCrash: Date.now(), 
-                'p1.laps': 0,
-                'p2.laps': 0
-            });
+            try {
+                await updateDoc(docRef, {
+                    status: 'CRASHED',
+                    lastCrash: Date.now(),
+                    'p1.laps': 0,
+                    'p2.laps': 0
+                });
+            } catch(e) {}
         }
 
         function checkLaps(player) {
             const cx = VIRTUAL_WIDTH/2;
             const cy = VIRTUAL_HEIGHT/2;
+            // Linha de chegada no bottom (Y > cy + 200)
             if (player.y > cy + 200) { 
                  const wasLeft = (player.x - Math.cos(player.angle)*player.speed) < cx;
                  const isRight = player.x >= cx;
@@ -349,17 +345,11 @@
 
         async function updateMyScore() {
             const el = document.getElementById(`p${myId}-laps`);
-            const laps = Math.max(0, state[`p${myId}`].laps);
-            el.innerText = laps;
-            if (laps >= 10 && state.status !== 'FINISHED') {
-                await updateDoc(doc(db, 'corridas', 'sala_unica'), {
-                    status: 'FINISHED',
-                    winner: myId
-                });
-            }
+            el.innerText = state[`p${myId}`].laps;
+            // Não checamos vitória aqui para não travar, apenas contamos infinito ou até 10 visualmente
         }
 
-        // --- DESENHO (Compatibilidade Mobile Fixa) ---
+        // --- DESENHO SEGURO ---
         function drawRoundedRect(ctx, x, y, w, h, r) {
             ctx.beginPath();
             ctx.moveTo(x + r, y);
@@ -376,6 +366,7 @@
         }
 
         function draw() {
+            // Limpa
             ctx.fillStyle = '#0f172a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -388,35 +379,35 @@
             const cx = VIRTUAL_WIDTH/2;
             const cy = VIRTUAL_HEIGHT/2;
 
-            // Pista (Desenhada em ordem)
-            // 1. Fundo Perigo (Vermelho)
+            // Pista
+            // 1. Perigo Externo
             ctx.beginPath();
             ctx.arc(cx, cy, SAFE_OUTER, 0, Math.PI*2);
-            ctx.fillStyle = '#b91c1c';
+            ctx.fillStyle = '#b91c1c'; // Vermelho
             ctx.fill();
 
-            // 2. Grama Externa
+            // 2. Borda
             ctx.beginPath();
             ctx.arc(cx, cy, TRACK_RADIUS + 50, 0, Math.PI*2);
             ctx.fillStyle = '#334155';
             ctx.fill();
 
-            // 3. Asfalto Principal
+            // 3. Asfalto
             ctx.beginPath();
             ctx.arc(cx, cy, TRACK_RADIUS + 45, 0, Math.PI*2);
             ctx.arc(cx, cy, TRACK_RADIUS - 45, 0, Math.PI*2, true);
             ctx.fillStyle = '#475569';
             ctx.fill();
 
-            // 4. Buraco Central (Perigo)
+            // 4. Perigo Interno
             ctx.beginPath();
             ctx.arc(cx, cy, SAFE_INNER, 0, Math.PI*2);
             ctx.fillStyle = '#b91c1c';
             ctx.fill();
             
-            // 5. Centro Seguro
+            // 5. Centro Fundo
             ctx.beginPath();
-            ctx.arc(cx, cy, SAFE_INNER - 10, 0, Math.PI*2);
+            ctx.arc(cx, cy, SAFE_INNER - 15, 0, Math.PI*2);
             ctx.fillStyle = '#0f172a'; 
             ctx.fill();
 
@@ -428,6 +419,7 @@
             ctx.lineTo(cx, cy + TRACK_RADIUS + 50);
             ctx.stroke();
 
+            // Desenhar Carros
             drawCar(state.p1, '#ef4444'); 
             drawCar(state.p2, '#3b82f6'); 
 
@@ -443,23 +435,22 @@
             ctx.fillStyle = 'rgba(0,0,0,0.5)';
             ctx.fillRect(-12, -8, 24, 16);
             
-            // Corpo (USANDO FUNÇÃO SEGURA)
+            // Corpo
             ctx.fillStyle = color;
             drawRoundedRect(ctx, -10, -18, 20, 36, 4);
 
-            // Luz de Freio
+            // Luzes
             if (player.speed < 0.5) {
                 ctx.fillStyle = '#ff0000';
                 ctx.fillRect(-8, 18, 16, 2);
             }
-
-            // Farol
             ctx.fillStyle = '#fbbf24';
             ctx.fillRect(6, -18, 4, 3);
             ctx.fillRect(-10, -18, 4, 3);
 
             ctx.restore();
             
+            // Nome
             ctx.fillStyle = 'white';
             ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'center';
@@ -471,16 +462,13 @@
             try {
                 updatePhysics();
                 draw();
-            } catch (e) {
-                console.error("Erro no loop:", e);
-            }
+            } catch (e) { console.error(e); }
             requestAnimationFrame(loop);
         }
 
-        // --- REDE (SYNC) ---
+        // --- SYNC REDE ---
         async function sendData() {
             if (!isReady) return;
-
             const myPlayer = state[`p${myId}`];
             const docRef = doc(db, 'corridas', 'sala_unica');
             const payload = {};
@@ -489,8 +477,7 @@
                 y: Math.round(myPlayer.y),
                 angle: parseFloat(myPlayer.angle.toFixed(2)),
                 laps: myPlayer.laps,
-                name: myPlayer.name,
-                active: true
+                name: myPlayer.name
             };
             try { await updateDoc(docRef, payload); } catch (e) {}
         }
@@ -500,56 +487,35 @@
                 if (!snap.exists()) return;
                 const data = snap.data();
                 
-                // CRASH LOGIC
+                // CRASH (Reset Global)
                 if (data.status === 'CRASHED' && data.lastCrash !== state.lastCrash) {
                     state.lastCrash = data.lastCrash;
-                    body.classList.add('crash-flash');
+                    
+                    // Efeitos
                     sfxCrash.play();
+                    body.classList.add('crash-flash');
                     setTimeout(() => body.classList.remove('crash-flash'), 500);
+                    
+                    // Reset Dados
                     state.p1.laps = 0;
                     state.p2.laps = 0;
                     resetMyPosition();
                     
                     const msg = document.getElementById('game-msg');
                     msg.innerText = "CRASH! RESET!";
-                    msg.className = "text-red-500 font-black text-2xl animate-ping";
-                    
-                    if (myId === 1) {
-                        setTimeout(() => {
-                            updateDoc(doc(db, 'corridas', 'sala_unica'), { status: 'RACING' });
-                        }, 2000);
-                    }
-                }
+                    msg.classList.replace('text-green-500', 'text-red-500');
 
-                if (data.status !== 'CRASHED') {
-                    state.status = data.status || 'WAITING';
-                    const statusEl = document.getElementById('game-msg');
-                    
-                    // Lógica para P1 Auto-Start
-                    // Se eu sou P1, e estamos esperando, mas o P2 já está ativo -> COMEÇA!
-                    if (myId === 1 && state.status === 'WAITING' && data.p2 && data.p2.active) {
-                        updateDoc(doc(db, 'corridas', 'sala_unica'), { status: 'RACING' });
-                    }
-
-                    if (state.status === 'RACING') {
-                        statusEl.innerText = "ACELERA!";
-                        statusEl.className = "text-green-500 font-bold text-lg";
-                        // Esconde botão de forçar se o jogo começou
-                        document.getElementById('force-start-btn').classList.add('hidden');
-                    } else if (state.status === 'FINISHED') {
-                        const w = data.winner === 1 ? 'VERMELHO' : 'AZUL';
-                        statusEl.innerText = `${w} VENCEU!`;
-                        statusEl.className = "text-white font-black text-2xl neon-text animate-bounce";
-                    } else {
-                        statusEl.innerText = "AGUARDANDO O P2...";
-                        statusEl.className = "text-yellow-400 font-bold text-lg drop-shadow-md animate-pulse";
-                    }
+                    setTimeout(() => {
+                         msg.innerText = "JOGO ATIVO";
+                         msg.classList.replace('text-red-500', 'text-green-500');
+                    }, 2000);
                 }
 
                 // Sync Oponente
                 const enemyId = myId === 1 ? 2 : 1;
                 const enemyKey = `p${enemyId}`;
                 const enemyData = data[enemyKey];
+                
                 if (enemyData) {
                     state[enemyKey].x = enemyData.x;
                     state[enemyKey].y = enemyData.y;
@@ -559,6 +525,7 @@
                     document.getElementById(`${enemyKey}-laps`).innerText = enemyData.laps;
                 }
                 
+                // Garante que meu HUD mostra minhas voltas reais (caso resetado)
                 document.getElementById(`p${myId}-laps`).innerText = state[`p${myId}`].laps;
             });
         }
