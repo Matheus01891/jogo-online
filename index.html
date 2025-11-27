@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RACHA DOS IRMÃOS - V9 FINAL</title>
+    <title>RACHA V10 - SYNC & FAIR</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #0f172a; touch-action: none; font-family: 'Verdana', sans-serif; user-select: none; }
@@ -60,8 +60,8 @@
 
     <!-- LOBBY -->
     <div id="lobby" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-6 text-white interactive">
-        <h1 class="text-5xl font-black italic mb-2 text-yellow-400 drop-shadow-lg">RACHA V9</h1>
-        <p class="text-slate-400 mb-8 text-center text-sm">Versão Final com Suas Chaves</p>
+        <h1 class="text-5xl font-black italic mb-2 text-yellow-400 drop-shadow-lg">RACHA V10</h1>
+        <p class="text-slate-400 mb-8 text-center text-sm">Largada Justa + Sync Forçado</p>
         
         <div class="w-full max-w-sm flex flex-col gap-4">
             <input type="text" id="username" class="w-full bg-slate-800 border-2 border-slate-600 rounded-xl p-4 text-white font-bold uppercase text-center text-xl focus:border-yellow-400 outline-none" placeholder="SEU NOME">
@@ -76,7 +76,6 @@
             <div id="loading-msg" class="hidden text-center text-yellow-400 font-bold animate-pulse">
                 INICIANDO...
             </div>
-            <p class="text-[10px] text-slate-500 text-center mt-4">Conectando ao jogo-de-2...</p>
         </div>
     </div>
 
@@ -125,7 +124,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- SUAS CHAVES DO FIREBASE (NÃO REMOVER!) ---
+        // --- CONFIGURAÇÃO FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyBfVOCuakSWtU6O_d_XstGoDpAg8fC2_n4",
             authDomain: "jogo-de-2-169d9.firebaseapp.com",
@@ -135,8 +134,8 @@
             appId: "1:37135467278:web:e2e0cdec4c6dbcda768d5f"
         };
 
-        // Inicialização
-        let app, auth, db, dbConnected = false;
+        // Inicialização com Tratamento de Erro
+        let app, auth, db;
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
@@ -144,7 +143,7 @@
             console.log("Firebase Init OK");
         } catch (e) {
             console.error("Firebase Init Fail", e);
-            alert("Erro nas Chaves do Firebase!");
+            alert("Erro config Firebase");
         }
 
         // --- ÁUDIO ---
@@ -166,7 +165,7 @@
         const ctx = canvas.getContext('2d');
         const body = document.getElementById('body');
         
-        // Dimensões
+        // Dimensões Pista
         const VIRTUAL_WIDTH = 800;
         const VIRTUAL_HEIGHT = 800;
         const TRACK_RADIUS = 320;
@@ -174,11 +173,15 @@
         const SAFE_INNER = TRACK_RADIUS - (TRACK_WIDTH/2) - 10;
         const SAFE_OUTER = TRACK_RADIUS + (TRACK_WIDTH/2) + 10;
         
+        // Centro da Pista
+        const CX = VIRTUAL_WIDTH / 2;
+        const CY = VIRTUAL_HEIGHT / 2;
+
         let myId = 0; 
         let isReady = false;
         let scaleFactor = 1;
         let lastCrashTime = 0;
-        let currentUser = null;
+        let authReady = false;
 
         // Física
         const MAX_SPEED = 8.0;
@@ -195,21 +198,16 @@
 
         const keys = { left: false, right: false, up: false };
 
-        // --- AUTENTICAÇÃO ANÔNIMA ---
+        // --- AUTENTICAÇÃO ---
         if (auth) {
             signInAnonymously(auth).catch((error) => {
-                console.error("Erro no login anônimo:", error);
-                updateStatus("ERRO LOGIN", "red");
+                console.warn("Auth Anônimo falhou, mas continuando:", error);
             });
 
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    console.log("Logado como:", user.uid);
-                    currentUser = user;
-                    dbConnected = true;
+                    authReady = true;
                     updateStatus("ONLINE", "green");
-                } else {
-                    updateStatus("DESCONECTADO", "red");
                 }
             });
         }
@@ -234,7 +232,6 @@
         
         // --- INICIAR JOGO ---
         window.startGame = (id) => {
-            console.log("Start Game ID:", id);
             const nameInput = document.getElementById('username').value.trim() || `P${id}`;
             myId = id;
             
@@ -250,43 +247,51 @@
             isReady = true;
             requestAnimationFrame(loop);
             
-            // Sync Loop
+            // Sync Loop (Envia mesmo sem auth completa se o db permitir)
             setInterval(sendData, 40); 
             setupListener();
 
-            // Música
-            bgm.play().catch(e => console.log("Musica precisa de clique"));
+            bgm.play().catch(e => console.log("Musica manual"));
         };
 
         // --- BANCO DE DADOS ---
-        // Usando o caminho da collection direta pois suas regras permitem
-        // Caso mude a regra para auth!=null, isso continua funcionando
-        const getGameDoc = () => doc(db, 'corridas', 'sala_unica_v9');
+        const getGameDoc = () => doc(db, 'corridas', 'sala_unica_v10');
 
-        // --- RESET ---
+        // --- RESET GLOBAL ---
         window.forceReset = async () => {
             if(!isReady) return;
             state.p1.laps = 0; state.p2.laps = 0;
             resetMyPosition();
             
-            if (dbConnected) {
-                try {
-                    await setDoc(getGameDoc(), {
-                        status: 'CRASHED',
-                        lastCrash: Date.now(),
-                        p1: { laps: 0 },
-                        p2: { laps: 0 }
-                    }, { merge: true });
-                } catch(e) {}
-            }
+            try {
+                await setDoc(getGameDoc(), {
+                    status: 'CRASHED',
+                    lastCrash: Date.now(),
+                    p1: { laps: 0 },
+                    p2: { laps: 0 }
+                }, { merge: true });
+            } catch(e) {}
         };
 
         function resetMyPosition() {
-            const startY = VIRTUAL_HEIGHT/2 + TRACK_RADIUS - 40;
+            // Posicionamento Justo (Atrás da linha)
+            // A linha fica em Y positivo (baixo). Angulo 0 é direita.
+            // Para ficar atrás da linha (antes de cruzar X=CX), precisamos estar em X < CX.
+            const startY = CY + TRACK_RADIUS - 40; // Parte de baixo
             const p = state[`p${myId}`];
-            p.x = (myId === 1) ? VIRTUAL_WIDTH/2 - 40 : VIRTUAL_WIDTH/2 + 40;
-            p.y = startY;
-            p.angle = 0; 
+            
+            if (myId === 1) {
+                // P1 (Vermelho): Raia Interna (Menor raio)
+                // Vamos posicionar um pouco à esquerda do centro (atrás da linha)
+                p.x = CX - 30; 
+                p.y = CY + (TRACK_RADIUS - 30); // Raio menor (interno)
+            } else {
+                // P2 (Azul): Raia Externa (Maior raio)
+                p.x = CX - 30; // Mesmo X (alinhados)
+                p.y = CY + (TRACK_RADIUS + 30); // Raio maior (externo)
+            }
+            
+            p.angle = 0; // Apontando para direita (sentido da corrida)
             p.speed = 0;
         }
 
@@ -339,8 +344,8 @@
             p.x += Math.cos(p.angle) * p.speed;
             p.y += Math.sin(p.angle) * p.speed;
 
-            const dx = p.x - VIRTUAL_WIDTH/2;
-            const dy = p.y - VIRTUAL_HEIGHT/2;
+            const dx = p.x - CX;
+            const dy = p.y - CY;
             const dist = Math.sqrt(dx*dx + dy*dy);
 
             if (dist < SAFE_INNER || dist > SAFE_OUTER) {
@@ -361,11 +366,12 @@
         }
 
         function checkLaps(player) {
-            const cx = VIRTUAL_WIDTH/2;
-            const cy = VIRTUAL_HEIGHT/2;
-            if (player.y > cy + 200) { 
-                 const wasLeft = (player.x - Math.cos(player.angle)*player.speed) < cx;
-                 const isRight = player.x >= cx;
+            // Linha de chegada é vertical em X = CX, na parte de baixo (Y > CY)
+            if (player.y > CY + 100) { 
+                 // Se passar da esquerda (X < CX) para a direita (X >= CX)
+                 const wasLeft = (player.x - Math.cos(player.angle)*player.speed) < CX;
+                 const isRight = player.x >= CX;
+                 
                  if (wasLeft && isRight) {
                      player.laps++;
                      sfxLap.currentTime = 0;
@@ -405,19 +411,17 @@
             ctx.translate(offsetX, offsetY);
             ctx.scale(scaleFactor, scaleFactor);
 
-            const cx = VIRTUAL_WIDTH/2;
-            const cy = VIRTUAL_HEIGHT/2;
-
             // Pista
-            ctx.beginPath(); ctx.arc(cx, cy, SAFE_OUTER, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill();
-            ctx.beginPath(); ctx.arc(cx, cy, TRACK_RADIUS + 60, 0, Math.PI*2); ctx.fillStyle = '#334155'; ctx.fill();
-            ctx.beginPath(); ctx.arc(cx, cy, TRACK_RADIUS + 50, 0, Math.PI*2); ctx.fillStyle = '#475569'; ctx.fill();
-            ctx.beginPath(); ctx.arc(cx, cy, TRACK_RADIUS - 50, 0, Math.PI*2); ctx.fillStyle = '#334155'; ctx.fill();
-            ctx.beginPath(); ctx.arc(cx, cy, SAFE_INNER, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill();
-            ctx.beginPath(); ctx.arc(cx, cy, SAFE_INNER - 10, 0, Math.PI*2); ctx.fillStyle = '#0f172a'; ctx.fill();
+            ctx.beginPath(); ctx.arc(CX, CY, SAFE_OUTER, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill();
+            ctx.beginPath(); ctx.arc(CX, CY, TRACK_RADIUS + 60, 0, Math.PI*2); ctx.fillStyle = '#334155'; ctx.fill();
+            ctx.beginPath(); ctx.arc(CX, CY, TRACK_RADIUS + 50, 0, Math.PI*2); ctx.fillStyle = '#475569'; ctx.fill();
+            ctx.beginPath(); ctx.arc(CX, CY, TRACK_RADIUS - 50, 0, Math.PI*2); ctx.fillStyle = '#334155'; ctx.fill();
+            ctx.beginPath(); ctx.arc(CX, CY, SAFE_INNER, 0, Math.PI*2); ctx.fillStyle = '#ef4444'; ctx.fill();
+            ctx.beginPath(); ctx.arc(CX, CY, SAFE_INNER - 10, 0, Math.PI*2); ctx.fillStyle = '#0f172a'; ctx.fill();
 
+            // Linha de Chegada
             ctx.lineWidth = 12; ctx.strokeStyle = '#fbbf24'; 
-            ctx.beginPath(); ctx.moveTo(cx, cy + TRACK_RADIUS - 50); ctx.lineTo(cx, cy + TRACK_RADIUS + 50); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(CX, CY + TRACK_RADIUS - 50); ctx.lineTo(CX, CY + TRACK_RADIUS + 50); ctx.stroke();
 
             drawCar(state.p1, '#ef4444'); 
             drawCar(state.p2, '#3b82f6'); 
@@ -454,7 +458,7 @@
 
         // --- NETWORKING ---
         async function sendData() {
-            if (!isReady || !currentUser || !dbConnected) return;
+            if (!isReady) return; // Removida a verificação estrita de Auth para não bloquear o envio
             
             const myData = {
                 x: Math.round(state[`p${myId}`].x),
@@ -468,13 +472,15 @@
             payload[`p${myId}`] = myData;
 
             try {
+                // Tenta enviar mesmo sem confirmação de login (já que as regras são públicas por enquanto)
                 await setDoc(getGameDoc(), payload, { merge: true });
-            } catch(e) { console.error("Erro envio:", e); }
+            } catch(e) { 
+                console.error("Erro envio (Sync):", e); 
+            }
         }
 
         function setupListener() {
-            if (!dbConnected) return;
-
+            // Escuta mesmo sem Auth confirmado
             onSnapshot(getGameDoc(), (snap) => {
                 if (!snap.exists()) return;
                 const data = snap.data();
