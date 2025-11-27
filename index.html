@@ -3,92 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Racha dos Irmãos - Online</title>
+    <title>Racha dos Irmãos - Versão Estável</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #111; touch-action: none; font-family: 'Courier New', Courier, monospace; }
-        canvas { display: block; }
+        body { margin: 0; overflow: hidden; background: #0f172a; touch-action: none; font-family: 'Verdana', sans-serif; }
+        canvas { display: block; margin: auto; }
         
         /* UI Overlay */
-        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; p-4; }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; box-sizing: border-box; }
         .interactive { pointer-events: auto; }
         
-        /* Neon Glows */
-        .neon-text { text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.5); }
-        .p1-color { color: #ef4444; text-shadow: 0 0 10px #ef4444; }
-        .p2-color { color: #3b82f6; text-shadow: 0 0 10px #3b82f6; }
-        
-        /* Controls for Mobile */
-        .touch-zone { position: absolute; bottom: 20px; width: 40%; height: 150px; background: rgba(255,255,255,0.1); border-radius: 20px; border: 2px solid rgba(255,255,255,0.2); pointer-events: auto; display: flex; align-items: center; justify-content: center; }
-        .touch-zone:active { background: rgba(255,255,255,0.3); }
-        #left-zone { left: 20px; }
-        #right-zone { right: 20px; }
+        /* Botões de Lobby */
+        .btn-start { background: linear-gradient(to bottom, #ef4444, #b91c1c); box-shadow: 0 4px 0 #7f1d1d; }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 0 0 #7f1d1d; }
+        .btn-join { background: linear-gradient(to bottom, #3b82f6, #1d4ed8); box-shadow: 0 4px 0 #1e3a8a; }
+        .btn-join:active { transform: translateY(4px); box-shadow: 0 0 0 #1e3a8a; }
+
+        /* Controles Mobile Grandes */
+        .touch-area {
+            position: absolute; bottom: 10px; width: 45%; height: 180px; 
+            border-radius: 20px; border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); pointer-events: auto;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .touch-area:active { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); }
+        #btn-left { left: 10px; }
+        #btn-right { right: 10px; }
+        .arrow { font-size: 60px; color: rgba(255,255,255,0.3); user-select: none; }
     </style>
 </head>
 <body>
 
-    <!-- TELA DE LOBBY -->
-    <div id="lobby" class="fixed inset-0 bg-gray-900 z-50 flex flex-col items-center justify-center p-4">
-        <h1 class="text-4xl md:text-6xl text-white font-black mb-2 tracking-tighter italic neon-text">RACHA<span class="text-yellow-500">.io</span></h1>
-        <p class="text-gray-400 mb-8">Disputa em Tempo Real</p>
+    <!-- LOBBY -->
+    <div id="lobby" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-4 text-white">
+        <h1 class="text-5xl font-black italic tracking-tighter mb-2 text-yellow-400">SUPER RACHA</h1>
+        <p class="text-slate-400 mb-8 text-center text-sm">Versão Otimizada Mobile</p>
         
-        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 w-full max-w-sm shadow-2xl relative">
-            <div id="connection-status" class="absolute top-2 right-2 w-3 h-3 rounded-full bg-red-500"></div>
+        <div class="bg-slate-800 p-6 rounded-2xl w-full max-w-sm border border-slate-700 shadow-xl">
+            <div id="status-dot" class="w-3 h-3 rounded-full bg-red-500 absolute top-6 right-6 animate-pulse"></div>
             
-            <label class="block text-gray-400 text-sm mb-1">Seu Piloto</label>
-            <input type="text" id="username" placeholder="Nome..." class="w-full bg-gray-900 text-white p-3 rounded border border-gray-600 mb-4 focus:border-yellow-500 outline-none uppercase font-bold">
-            
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="joinGame(1)" class="bg-red-600 hover:bg-red-500 text-white p-4 rounded font-bold transition transform hover:scale-105">
-                    <div class="text-xs opacity-75">CRIAR SALA</div>
-                    PLAYER 1
+            <label class="text-xs text-slate-400 uppercase font-bold ml-1">Seu Nome</label>
+            <input type="text" id="username" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 mb-6 text-white font-bold outline-none focus:border-yellow-500 uppercase" placeholder="DIGITE SEU NOME...">
+
+            <div class="flex flex-col gap-3">
+                <button onclick="startGame(1)" class="btn-start text-white font-black py-4 rounded-xl text-xl w-full interactive">
+                    CRIAR SALA (P1)
                 </button>
-                <button onclick="joinGame(2)" class="bg-blue-600 hover:bg-blue-500 text-white p-4 rounded font-bold transition transform hover:scale-105">
-                    <div class="text-xs opacity-75">ENTRAR NA SALA</div>
-                    PLAYER 2
+                <button onclick="startGame(2)" class="btn-join text-white font-black py-4 rounded-xl text-xl w-full interactive">
+                    ENTRAR (P2)
                 </button>
             </div>
-            <p class="mt-4 text-xs text-center text-gray-500">Player 1 cria a sala. Player 2 entra nela.</p>
+            <p class="mt-4 text-[10px] text-center text-slate-500">
+                O Player 1 deve criar a sala primeiro.<br>Certifiquem-se de que ambos estão conectados.
+            </p>
         </div>
     </div>
 
-    <!-- HUD DO JOGO -->
+    <!-- HUD (PLACAR) -->
     <div id="game-ui" class="ui-layer hidden">
-        <div class="flex justify-between p-4 w-full">
-            <div class="bg-gray-900 bg-opacity-80 p-2 rounded border border-red-500 text-center min-w-[100px]">
-                <div class="text-xs text-gray-400">P1 (Vermelho)</div>
-                <div id="p1-laps" class="text-2xl font-bold text-white">0/10</div>
-            </div>
-            
-            <div class="text-center">
-                <div id="race-status" class="text-yellow-500 font-bold text-xl neon-text animate-pulse">AQUECENDO MOTORES...</div>
+        <!-- Topo: Placar -->
+        <div class="flex justify-between w-full max-w-2xl mx-auto">
+            <div class="bg-slate-900/90 border-l-4 border-red-500 p-2 rounded w-24 text-center shadow-lg">
+                <div class="text-[10px] text-red-400 font-bold">P1</div>
+                <div id="p1-laps" class="text-2xl font-black text-white">0/10</div>
             </div>
 
-            <div class="bg-gray-900 bg-opacity-80 p-2 rounded border border-blue-500 text-center min-w-[100px]">
-                <div class="text-xs text-gray-400">P2 (Azul)</div>
-                <div id="p2-laps" class="text-2xl font-bold text-white">0/10</div>
+            <div class="flex flex-col items-center pt-2">
+                <div id="game-msg" class="text-yellow-400 font-bold text-lg shadow-black drop-shadow-md animate-pulse">AGUARDANDO...</div>
+            </div>
+
+            <div class="bg-slate-900/90 border-r-4 border-blue-500 p-2 rounded w-24 text-center shadow-lg">
+                <div class="text-[10px] text-blue-400 font-bold">P2</div>
+                <div id="p2-laps" class="text-2xl font-black text-white">0/10</div>
             </div>
         </div>
 
-        <!-- Controles Mobile (Só aparecem se for touch) -->
+        <!-- Controles Touch (Só visiveis no mobile) -->
         <div id="mobile-controls" class="hidden w-full h-full pointer-events-none">
-            <div id="left-zone" class="touch-zone"><span class="text-4xl text-white opacity-50">◄</span></div>
-            <div id="right-zone" class="touch-zone"><span class="text-4xl text-white opacity-50">►</span></div>
+            <div id="btn-left" class="touch-area"><span class="arrow">◄</span></div>
+            <div id="btn-right" class="touch-area"><span class="arrow">►</span></div>
         </div>
     </div>
 
-    <!-- O JOGO -->
     <canvas id="gameCanvas"></canvas>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- FIREBASE CONFIG (EDITAR AQUI) ---
-        // Se estiveres a testar neste editor, ele usará a config automática (__firebase_config).
-        // Se fores colocar no teu próprio site, substitui os valores abaixo pelos do teu projeto Firebase.
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        // --- CONFIGURAÇÃO FIREBASE (A SUA CONFIGURAÇÃO) ---
+        const firebaseConfig = {
             apiKey: "AIzaSyBfVOCuakSWtU6O_d_XstGoDpAg8fC2_n4",
             authDomain: "jogo-de-2-169d9.firebaseapp.com",
             projectId: "jogo-de-2-169d9",
@@ -96,426 +101,390 @@
             messagingSenderId: "37135467278",
             appId: "1:37135467278:web:e2e0cdec4c6dbcda768d5f"
         };
-        
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
-        // Use um ID padrão se não estiver no ambiente de teste
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-race-game';
 
         // --- VARIÁVEIS DO JOGO ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        let myPlayerId = 0; // 1 ou 2
-        let gameActive = false;
-        let userId = null;
-
-        // Configurações da Pista e Carros
-        const trackRadius = 300; // Tamanho da pista
-        const carSize = { w: 20, h: 36 };
         
-        // Estado Local dos Carros
-        const cars = {
-            1: { x: 0, y: 0, angle: 0, speed: 0, laps: 0, lastLapAngle: 0, color: '#ef4444', targetX: 0, targetY: 0, targetAngle: 0 },
-            2: { x: 0, y: 0, angle: 0, speed: 0, laps: 0, lastLapAngle: 0, color: '#3b82f6', targetX: 0, targetY: 0, targetAngle: 0 }
+        // Dimensões Virtuais (O jogo sempre "acha" que tem esse tamanho, depois a gente estica ou encolhe)
+        const VIRTUAL_WIDTH = 800;
+        const VIRTUAL_HEIGHT = 800;
+        
+        let myId = 0; // 1 ou 2
+        let isReady = false;
+        let scaleFactor = 1;
+
+        // Física Arcade Ajustada
+        const MAX_SPEED = 7.0;     // Velocidade máxima menor para controle
+        const ACCEL = 0.2;         // Aceleração suave
+        const TURN_SPEED = 0.08;   // Curva
+        const FRICTION = 0.96;     // Carro para rápido se soltar
+        const TRACK_RADIUS = 320;
+
+        // Estado do Jogo
+        const state = {
+            p1: { x: 0, y: 0, angle: 0, speed: 0, laps: 0, lastLapAngle: 0, name: 'P1' },
+            p2: { x: 0, y: 0, angle: 0, speed: 0, laps: 0, lastLapAngle: 0, name: 'P2' },
+            status: 'WAITING', // WAITING, RACING, FINISHED
+            winner: null
         };
 
         // Inputs
-        const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
-        let isMobile = false;
+        const keys = { left: false, right: false, up: false, down: false };
 
-        // --- SISTEMA DE AUTENTICAÇÃO E INICIALIZAÇÃO ---
-        const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        };
+        // --- SISTEMA DE CÂMERA / RESIZE ---
+        function resize() {
+            // Ajusta o canvas para o tamanho da janela
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Calcula o menor fator de escala para caber TUDO na tela
+            const scaleX = window.innerWidth / VIRTUAL_WIDTH;
+            const scaleY = window.innerHeight / VIRTUAL_HEIGHT;
+            scaleFactor = Math.min(scaleX, scaleY) * 0.95; // 95% para deixar margem
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-        initAuth();
-
+        // --- AUTENTICAÇÃO ---
+        signInAnonymously(auth).catch(console.error);
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                userId = user.uid;
-                document.getElementById('connection-status').classList.replace('bg-red-500', 'bg-green-500');
+                document.getElementById('status-dot').classList.replace('bg-red-500', 'bg-green-500');
             }
         });
 
-        // --- FUNÇÕES DE LOBBY ---
-        window.joinGame = async (playerNum) => {
-            const name = document.getElementById('username').value.trim() || `Piloto ${playerNum}`;
-            if (!userId) return alert("Conectando ao servidor... aguarde.");
-
-            myPlayerId = playerNum;
+        // --- CONTROLES ---
+        window.startGame = async (id) => {
+            const nameInput = document.getElementById('username').value.trim();
+            if (!nameInput) return alert("BOTA UM NOME AÍ, CAMPEÃO!");
             
-            // UI Switch
+            myId = id;
             document.getElementById('lobby').classList.add('hidden');
             document.getElementById('game-ui').classList.remove('hidden');
-            
-            // Mobile check
-            if ('ontouchstart' in window) {
-                isMobile = true;
+
+            if('ontouchstart' in window) {
                 document.getElementById('mobile-controls').classList.remove('hidden');
             }
 
-            // Inicializar Posições
-            resetPositions();
-
-            // Começar Sync
-            startGameLoop();
-            setupFirestoreListener();
+            // Posição Inicial
+            resetPosition(myId);
             
-            // Registrar entrada
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'race_room_1');
-            // Se for P1, reseta o jogo no banco. Se for P2, só entra.
-            if (myPlayerId === 1) {
-                await setDoc(docRef, {
+            // Inicializar no Banco
+            const docRef = doc(db, 'corridas', 'sala_unica');
+            
+            const myData = {
+                x: state[`p${myId}`].x,
+                y: state[`p${myId}`].y,
+                angle: state[`p${myId}`].angle,
+                laps: 0,
+                name: nameInput
+            };
+
+            // Se for P1, limpa o status. Se for P2, inicia a corrida.
+            if (myId === 1) {
+                await setDoc(docRef, { 
+                    p1: myData, 
                     status: 'WAITING',
-                    p1: { name, active: true, x: cars[1].x, y: cars[1].y, angle: cars[1].angle, laps: 0 },
-                    // Não apagamos p2 se ele já estiver lá, mas idealmente resetariamos
-                    lastUpdate: Date.now()
-                }, { merge: true });
+                    winner: null
+                }, { merge: true }); // Merge true para não apagar P2 se ele já estiver tentando conectar
             } else {
-                 await setDoc(docRef, {
-                    p2: { name, active: true, x: cars[2].x, y: cars[2].y, angle: cars[2].angle, laps: 0 },
-                    status: 'RACING' // P2 entrando começa a corrida
+                await setDoc(docRef, { 
+                    p2: myData, 
+                    status: 'RACING' 
                 }, { merge: true });
             }
+
+            isReady = true;
+            setupListener();
+            requestAnimationFrame(loop);
+            
+            // Loop de Envio de Dados (20x por segundo)
+            setInterval(sendData, 50);
         };
 
-        function resetPositions() {
-            // Posicionar carros na linha de largada
-            cars[1].x = canvas.width / 2 - 20;
-            cars[1].y = canvas.height / 2 + trackRadius - 40; // Parte de baixo do círculo
-            cars[1].angle = 0; // Apontando para direita (0 radianos)
-            cars[1].laps = -1; // Começa com -1 para contar a primeira passagem na linha como "0" voltas completas
-            
-            cars[2].x = canvas.width / 2 + 20;
-            cars[2].y = canvas.height / 2 + trackRadius - 40;
-            cars[2].angle = 0;
-            cars[2].laps = -1;
-            
-            // Sync targets
-            cars[1].targetX = cars[1].x; cars[1].targetY = cars[1].y;
-            cars[2].targetX = cars[2].x; cars[2].targetY = cars[2].y;
-        }
-
-        // --- LÓGICA DO JOGO (CLIENTE) ---
-        
-        // Inputs
-        window.addEventListener('keydown', (e) => keys[e.code] = true);
-        window.addEventListener('keyup', (e) => keys[e.code] = false);
-        
-        // Touch Controls
-        const leftZone = document.getElementById('left-zone');
-        const rightZone = document.getElementById('right-zone');
-        
-        leftZone.addEventListener('touchstart', (e) => { e.preventDefault(); keys.ArrowLeft = true; keys.ArrowUp = true; }); // Auto-gas on mobile
-        leftZone.addEventListener('touchend', (e) => { e.preventDefault(); keys.ArrowLeft = false; keys.ArrowUp = false; });
-        rightZone.addEventListener('touchstart', (e) => { e.preventDefault(); keys.ArrowRight = true; keys.ArrowUp = true; });
-        rightZone.addEventListener('touchend', (e) => { e.preventDefault(); keys.ArrowRight = false; keys.ArrowUp = false; });
-
-        function updatePhysics(carId) {
-            const car = cars[carId];
-            
-            // Aceleração / Rotação (Apenas para o meu carro)
-            if (carId === myPlayerId) {
-                if (keys.ArrowUp) car.speed += 0.2;
-                if (keys.ArrowDown) car.speed -= 0.1;
-                if (keys.ArrowLeft) car.angle -= 0.07; // Curva mais fechada
-                if (keys.ArrowRight) car.angle += 0.07;
-                
-                // Atrito
-                car.speed *= 0.96;
-                
-                // Mover
-                car.x += Math.cos(car.angle) * car.speed;
-                car.y += Math.sin(car.angle) * car.speed;
-
-                // Colisão com Limites (Simplificada - Distância do centro)
-                const dx = car.x - canvas.width / 2;
-                const dy = car.y - canvas.height / 2;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                
-                // Se sair da pista (muito longe ou muito perto do centro), desacelera muito
-                if (dist > trackRadius + 60 || dist < trackRadius - 60) {
-                    car.speed *= 0.8; // Grama/Areia
-                }
+        function resetPosition(id) {
+            // P1 Esquerda, P2 Direita, ambos na parte de baixo da pista
+            const startY = VIRTUAL_HEIGHT/2 + TRACK_RADIUS - 40;
+            if (id === 1) {
+                state.p1.x = VIRTUAL_WIDTH/2 - 30;
+                state.p1.y = startY;
+                state.p1.angle = 0; // Direita
+                state.p1.laps = -1;
             } else {
-                // Interpolação para o oponente (Suavizar movimento recebido do banco)
-                const lerp = 0.1; // Fator de suavização
-                car.x += (car.targetX - car.x) * lerp;
-                car.y += (car.targetY - car.y) * lerp;
-                
-                // Interpolação angular mais inteligente (evitar girar 360 desnecessário)
-                let dAngle = car.targetAngle - car.angle;
-                while (dAngle > Math.PI) dAngle -= Math.PI * 2;
-                while (dAngle < -Math.PI) dAngle += Math.PI * 2;
-                car.angle += dAngle * lerp;
-            }
-
-            // Contagem de Voltas (Lógica de Arco)
-            // Calculamos o ângulo em relação ao centro da pista
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2;
-            let currentArcAngle = Math.atan2(car.y - cy, car.x - cx);
-            
-            // Detectar cruzar a linha de chegada (ângulo positivo para negativo perto de PI/2)
-            // Linha de chegada está em baixo (90 graus ou PI/2)
-            // Simplificação: Se passou pelo ponto Y baixo e X mudou de sinal, ou apenas contagem angular
-            // Vamos usar checkpoints simples: Se angulo cruza PI/2 (90deg)
-            
-            // Maneira robusta: Se cruzou a linha de largada (em baixo, x > centro)
-            if (carId === myPlayerId) {
-                // Checar se cruzou a linha de meta (ângulo PI/2)
-                 // Vamos simplificar: se passamos da direita pra esquerda na parte de baixo
-                if (car.lastLapAngle < 1.5 && currentArcAngle >= 1.5 && car.y > cy) {
-                   // Passou perto da linha de baixo?
-                }
-                
-                // Método simples de checkpoint: dividir pista em 4 quadrantes
-                // Q1 -> Q2 -> Q3 -> Q4 -> Q1 (Volta)
-                // Isso requer estado extra.
-                
-                // Método "Avanço de Angulo":
-                let diff = currentArcAngle - car.lastLapAngle;
-                // Tratar a virada de -PI para +PI
-                if (diff < -Math.PI) diff += Math.PI * 2;
-                if (diff > Math.PI) diff -= Math.PI * 2;
-                
-                // Se diff for positivo, está indo sentido horário (vamos definir sentido horário como correto)
-                if (diff > 0) {
-                    car.progress += diff;
-                }
-                car.lastLapAngle = currentArcAngle;
+                state.p2.x = VIRTUAL_WIDTH/2 + 30;
+                state.p2.y = startY;
+                state.p2.angle = 0;
+                state.p2.laps = -1;
             }
         }
 
-        // --- RENDERIZAÇÃO ---
-        function drawTrack() {
-            // Fundo
-            ctx.fillStyle = '#2d3748'; // Asfalto escuro
+        // --- INPUTS ---
+        // Teclado
+        window.addEventListener('keydown', e => {
+            if(e.key === 'ArrowLeft') keys.left = true;
+            if(e.key === 'ArrowRight') keys.right = true;
+            if(e.key === 'ArrowUp') keys.up = true;
+        });
+        window.addEventListener('keyup', e => {
+            if(e.key === 'ArrowLeft') keys.left = false;
+            if(e.key === 'ArrowRight') keys.right = false;
+            if(e.key === 'ArrowUp') keys.up = false;
+        });
+
+        // Touch (Celular)
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        
+        const handleTouch = (dir, active) => {
+            if(dir === 'left') keys.left = active;
+            if(dir === 'right') keys.right = active;
+            keys.up = (keys.left || keys.right); // Acelera automático se estiver virando
+        };
+
+        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('left', true); });
+        btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); handleTouch('left', false); });
+        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('right', true); });
+        btnRight.addEventListener('touchend', (e) => { e.preventDefault(); handleTouch('right', false); });
+
+        // --- LÓGICA DO JOGO ---
+        function updatePhysics() {
+            // Só calculamos a física do NOSSO carro. O do inimigo vem da internet.
+            const p = state[`p${myId}`];
+            
+            // Aceleração
+            if (keys.up) {
+                p.speed += ACCEL;
+            }
+            
+            // Atrito natural
+            p.speed *= FRICTION;
+
+            // Limite
+            if (p.speed > MAX_SPEED) p.speed = MAX_SPEED;
+            
+            // Curva (carro só vira se estiver andando um pouco)
+            if (Math.abs(p.speed) > 0.1) {
+                if (keys.left) p.angle -= TURN_SPEED;
+                if (keys.right) p.angle += TURN_SPEED;
+            }
+
+            // Movimento
+            p.x += Math.cos(p.angle) * p.speed;
+            p.y += Math.sin(p.angle) * p.speed;
+
+            // Colisão com Bordas (Punição de velocidade)
+            const dx = p.x - VIRTUAL_WIDTH/2;
+            const dy = p.y - VIRTUAL_HEIGHT/2;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            // Pista tem raio 320. Largura da pista aprox 120.
+            // Área segura: Entre 260 e 380 de distância do centro
+            if (dist < 260 || dist > 380) {
+                p.speed *= 0.85; // Grama reduz muito a velocidade
+            }
+
+            // Contagem de Voltas
+            checkLaps(p);
+        }
+
+        function checkLaps(player) {
+            const cx = VIRTUAL_WIDTH/2;
+            const cy = VIRTUAL_HEIGHT/2;
+            
+            // Ângulo atual em relação ao centro da pista
+            const currentAngle = Math.atan2(player.y - cy, player.x - cx);
+            
+            // Detectar passagem pela linha de chegada (em baixo, ângulo positivo ~1.57 rad)
+            // Lógica simples: Se cruzou o eixo Y positivo
+            if (player.y > cy + 200) { // Está na parte de baixo
+                 // Se x passou de negativo (esquerda) para positivo (direita) = Sentido Anti-Horário
+                 // Vamos usar uma verificação de "Gate" simples
+                 const wasLeft = (player.x - Math.cos(player.angle)*player.speed) < cx;
+                 const isRight = player.x >= cx;
+                 
+                 if (wasLeft && isRight) {
+                     player.laps++;
+                     updateMyScore();
+                 }
+            }
+        }
+
+        async function updateMyScore() {
+            const el = document.getElementById(`p${myId}-laps`);
+            const currentLaps = Math.max(0, state[`p${myId}`].laps);
+            el.innerText = `${currentLaps}/10`;
+
+            if (currentLaps >= 10 && state.status !== 'FINISHED') {
+                // GANHOU!
+                await updateDoc(doc(db, 'corridas', 'sala_unica'), {
+                    status: 'FINISHED',
+                    winner: myId
+                });
+            }
+        }
+
+        // --- DESENHO ---
+        function draw() {
+            // Limpa tudo
+            ctx.fillStyle = '#0f172a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2;
 
-            // Grama fora
+            // Salva contexto para aplicar escala e centralização
+            ctx.save();
+            
+            // Centraliza o canvas virtual no meio da tela real
+            const offsetX = (canvas.width - VIRTUAL_WIDTH * scaleFactor) / 2;
+            const offsetY = (canvas.height - VIRTUAL_HEIGHT * scaleFactor) / 2;
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scaleFactor, scaleFactor);
+
+            // Desenha Pista
+            const cx = VIRTUAL_WIDTH/2;
+            const cy = VIRTUAL_HEIGHT/2;
+
+            // Grama Borda Externa
             ctx.beginPath();
-            ctx.fillStyle = '#064e3b';
-            ctx.rect(0,0,canvas.width, canvas.height);
-            ctx.arc(cx, cy, trackRadius + 50, 0, Math.PI * 2, true); // Buraco
+            ctx.arc(cx, cy, TRACK_RADIUS + 60, 0, Math.PI*2);
+            ctx.fillStyle = '#166534'; // Verde Escuro
             ctx.fill();
 
-            // Grama dentro
+            // Asfalto
             ctx.beginPath();
-            ctx.arc(cx, cy, trackRadius - 50, 0, Math.PI * 2);
+            ctx.arc(cx, cy, TRACK_RADIUS + 50, 0, Math.PI*2);
+            ctx.fillStyle = '#334155'; // Cinza Pista
             ctx.fill();
-            
-            // Zebras / Limites
+
+            // Grama Centro (Buraco)
             ctx.beginPath();
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
-            ctx.arc(cx, cy, trackRadius + 50, 0, Math.PI * 2);
-            ctx.stroke();
-            
-            ctx.beginPath();
-            ctx.arc(cx, cy, trackRadius - 50, 0, Math.PI * 2);
-            ctx.stroke();
+            ctx.arc(cx, cy, TRACK_RADIUS - 50, 0, Math.PI*2);
+            ctx.fillStyle = '#0f172a'; // Cor de fundo
+            ctx.fill();
 
             // Linha de Chegada (Em baixo)
-            ctx.beginPath();
+            ctx.lineWidth = 10;
             ctx.strokeStyle = '#fbbf24'; // Amarelo
-            ctx.lineWidth = 8;
-            ctx.moveTo(cx, cy + trackRadius - 50);
-            ctx.lineTo(cx, cy + trackRadius + 50);
+            ctx.beginPath();
+            ctx.moveTo(cx, cy + TRACK_RADIUS - 50);
+            ctx.lineTo(cx, cy + TRACK_RADIUS + 50);
             ctx.stroke();
-            
-            // Padrão Xadrez na chegada
-            for(let i=0; i<10; i++) {
-                ctx.fillStyle = i%2===0 ? '#fff' : '#000';
-                ctx.fillRect(cx - 4 + (i%2)*4, cy + trackRadius - 50 + i*10, 4, 10);
-            }
+
+            // Carros
+            drawCar(state.p1, '#ef4444'); // Vermelho
+            drawCar(state.p2, '#3b82f6'); // Azul
+
+            ctx.restore();
         }
 
-        function drawCar(id) {
-            const car = cars[id];
+        function drawCar(player, color) {
             ctx.save();
-            ctx.translate(car.x, car.y);
-            ctx.rotate(car.angle);
-            
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+
             // Sombra
             ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            ctx.fillRect(-carSize.w/2 + 5, -carSize.h/2 + 5, carSize.w, carSize.h);
+            ctx.fillRect(-12, -8, 24, 16);
 
-            // Corpo do Carro
-            ctx.fillStyle = car.color;
-            // Efeito neon se for o oponente
-            if (id !== myPlayerId) {
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = car.color;
-            }
-            
-            // Desenhar carro (Retangulo arredondado simples)
+            // Corpo
+            ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.roundRect(-carSize.w/2, -carSize.h/2, carSize.w, carSize.h, 3);
+            ctx.roundRect(-10, -18, 20, 36, 4); // x, y, w, h, radius
             ctx.fill();
 
-            // Janela
-            ctx.fillStyle = '#111';
-            ctx.fillRect(-carSize.w/2 + 2, -carSize.h/4, carSize.w - 4, carSize.h/3);
-            
-            // Faróis
+            // Vidro
+            ctx.fillStyle = '#000';
+            ctx.fillRect(-8, -5, 16, 10);
+
+            // Farol
             ctx.fillStyle = '#fbbf24';
-            ctx.fillRect(carSize.w/2 - 2, -carSize.h/2, 2, 4); // Direita frente (considerando rotação 0 = direita)
-            ctx.fillRect(carSize.w/2 - 2, carSize.h/2 - 4, 2, 4); 
+            ctx.fillRect(6, -18, 4, 3);
+            ctx.fillRect(-10, -18, 4, 3);
+
+            ctx.restore();
 
             // Nome
-            ctx.restore();
-            
-            // Desenhar nome acima do carro (sem rotação)
-            ctx.fillStyle = '#fff';
-            ctx.font = '10px Arial';
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(id === myPlayerId ? "VOCÊ" : `P${id}`, car.x, car.y - 25);
+            ctx.fillText(player.name || '', player.x, player.y - 25);
         }
 
-        function gameLoop() {
-            // Resize canvas
-            if (canvas.width !== window.innerWidth) {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-
-            // Updates
-            updatePhysics(1);
-            updatePhysics(2);
-
-            // Checar linha de chegada (sistema simplificado de coordenadas)
-            // Se Y é maior que centro, e X passa de negativo para positivo (sentido anti-horário padrão aqui é direita -> baixo -> esquerda -> cima)
-            // Vamos usar o Firestore para contar voltas baseado na "autoridade" do cliente
-            checkLaps(myPlayerId);
-
-            // Draw
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawTrack();
-            drawCar(1);
-            drawCar(2);
-
-            requestAnimationFrame(gameLoop);
+        function loop() {
+            if (!isReady) return;
+            updatePhysics();
+            draw();
+            requestAnimationFrame(loop);
         }
 
-        function checkLaps(pid) {
-            const car = cars[pid];
-            const cx = canvas.width/2;
-            const cy = canvas.height/2;
+        // --- REDE (SYNC) ---
+        async function sendData() {
+            if (!isReady) return;
             
-            // Checkpoint simples: Cruzar o eixo Y positivo (em baixo) da esquerda para direita
-            // Mas o angulo 0 é direita.
-            // Vamos simplificar: Distancia angular acumulada seria o ideal, mas complexo para demo.
-            // Vamos usar: Se passou pelo X=Centro na parte de baixo da tela
-            
-            // Se estava na esquerda e foi pra direita, na parte de baixo
-            // Precisamos guardar o X anterior
-            if (!car.lastX) car.lastX = car.x;
-            
-            // Linha de chegada no bottom (Y > cy)
-            if (car.y > cy + (trackRadius - 60)) {
-                if (car.lastX < cx && car.x >= cx) {
-                    // Completou volta (Sentido Anti-horário)
-                    car.laps++;
-                    updateLapCount(pid);
-                }
-            }
-            car.lastX = car.x;
-        }
-        
-        async function updateLapCount(pid) {
-            document.getElementById(pid === 1 ? 'p1-laps' : 'p2-laps').innerText = `${Math.max(0, cars[pid].laps)}/10`;
-            
-            // Se completou 10, Fim de Jogo
-            if (cars[pid].laps >= 10) {
-                // Enviar status de vitória
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'race_room_1');
-                await updateDoc(docRef, {
-                    winner: pid,
-                    status: 'FINISHED'
-                });
-            }
-        }
+            const myPlayer = state[`p${myId}`];
+            const docRef = doc(db, 'corridas', 'sala_unica');
 
-        function startGameLoop() {
-            if (gameActive) return;
-            gameActive = true;
-            resetPositions();
-            requestAnimationFrame(gameLoop);
-            
-            // Iniciar envio de dados (Sync Loop)
-            // Limitamos a 10 updates por segundo para economizar banda e evitar bloqueio
-            setInterval(sendPosition, 100); 
-        }
+            // Enviamos apenas o necessário
+            const payload = {};
+            payload[`p${myId}`] = {
+                x: Math.round(myPlayer.x), // Arredondar economiza banda
+                y: Math.round(myPlayer.y),
+                angle: parseFloat(myPlayer.angle.toFixed(2)),
+                laps: myPlayer.laps,
+                name: myPlayer.name
+            };
 
-        // --- NETWORKING (FIRESTORE) ---
-        
-        async function sendPosition() {
-            if (!userId || !myPlayerId) return;
-            
-            const car = cars[myPlayerId];
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'race_room_1');
-            
-            const field = myPlayerId === 1 ? 'p1' : 'p2';
-            
             try {
-                // Atualizamos apenas campos essenciais
-                await updateDoc(docRef, {
-                    [`${field}.x`]: Math.round(car.x), // Arredondar economiza bytes e reduz noise
-                    [`${field}.y`]: Math.round(car.y),
-                    [`${field}.angle`]: parseFloat(car.angle.toFixed(3)),
-                    [`${field}.laps`]: car.laps
-                });
+                await updateDoc(docRef, payload);
             } catch (e) {
-                // Ignorar erros de network temporários
+                // Erros silenciosos de rede são normais em jogos
             }
         }
 
-        function setupFirestoreListener() {
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'race_room_1');
-            
-            onSnapshot(docRef, (snap) => {
+        function setupListener() {
+            onSnapshot(doc(db, 'corridas', 'sala_unica'), (snap) => {
                 if (!snap.exists()) return;
                 const data = snap.data();
 
-                // Atualizar Estado do Jogo
-                if (data.status === 'RACING') {
-                    document.getElementById('race-status').innerText = "CORRIDA EM ANDAMENTO!";
-                    document.getElementById('race-status').classList.remove('animate-pulse');
-                    document.getElementById('race-status').classList.add('text-green-500');
-                }
+                // Atualizar Status Global
+                state.status = data.status || 'WAITING';
+                const statusEl = document.getElementById('game-msg');
                 
-                if (data.status === 'FINISHED') {
-                    const winnerName = data.winner === 1 ? "VERMELHO" : "AZUL";
-                    document.getElementById('race-status').innerText = `VENCEDOR: ${winnerName}!`;
-                    document.getElementById('race-status').className = "text-4xl font-black text-white neon-text animate-bounce";
+                if (state.status === 'WAITING') {
+                    statusEl.innerText = "ESPERANDO JOGADOR...";
+                    statusEl.className = "text-yellow-400 font-bold text-lg animate-pulse";
+                } else if (state.status === 'RACING') {
+                    statusEl.innerText = "CORRIDA VALENDO!";
+                    statusEl.className = "text-green-500 font-bold text-lg";
+                } else if (state.status === 'FINISHED') {
+                    const w = data.winner === 1 ? 'VERMELHO' : 'AZUL';
+                    statusEl.innerText = `${w} VENCEU!`;
+                    statusEl.className = "text-white font-black text-2xl neon-text animate-bounce";
                 }
 
-                // Atualizar Oponente
-                const opponentId = myPlayerId === 1 ? 2 : 1;
-                const opponentData = opponentId === 1 ? data.p1 : data.p2;
-                
-                if (opponentData) {
-                    // Definir o alvo para onde o carro do oponente deve ir (interpolação cuida do resto)
-                    cars[opponentId].targetX = opponentData.x;
-                    cars[opponentId].targetY = opponentData.y;
-                    cars[opponentId].targetAngle = opponentData.angle;
-                    
-                    // Atualizar UI de voltas do oponente
-                    const displayLaps = opponentData.laps < 0 ? 0 : opponentData.laps;
-                    document.getElementById(opponentId === 1 ? 'p1-laps' : 'p2-laps').innerText = `${displayLaps}/10`;
+                // Atualizar O INIMIGO (Nunca eu mesmo)
+                const enemyId = myId === 1 ? 2 : 1;
+                const enemyKey = `p${enemyId}`;
+                const enemyData = data[enemyKey];
+
+                if (enemyData) {
+                    // Atualização direta sem interpolação complexa para evitar "ghosting" errado
+                    // num jogo simples, é melhor ver ele "pular" pro lugar certo do que ver ele suavemente indo pro lugar errado
+                    state[enemyKey].x = enemyData.x;
+                    state[enemyKey].y = enemyData.y;
+                    state[enemyKey].angle = enemyData.angle;
+                    state[enemyKey].name = enemyData.name;
+                    state[enemyKey].laps = enemyData.laps;
+
+                    // Atualiza placar do inimigo
+                    document.getElementById(`${enemyKey}-laps`).innerText = `${Math.max(0, enemyData.laps)}/10`;
                 }
             });
         }
+
     </script>
 </body>
 </html>
