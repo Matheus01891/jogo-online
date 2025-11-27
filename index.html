@@ -3,47 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Racha dos Irmãos - Versão Estável</title>
+    <title>RACHA DOS IRMÃOS - PHONK EDITION</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #0f172a; touch-action: none; font-family: 'Verdana', sans-serif; }
+        body { margin: 0; overflow: hidden; background: #0f172a; touch-action: none; font-family: 'Verdana', sans-serif; user-select: none; }
         canvas { display: block; margin: auto; }
         
-        /* UI Overlay */
-        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; box-sizing: border-box; }
-        .interactive { pointer-events: auto; }
+        /* Efeitos Visuais */
+        .neon-text { text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.5); }
+        .crash-flash { animation: flash-red 0.5s ease-in-out; }
         
-        /* Botões de Lobby */
+        @keyframes flash-red {
+            0%, 100% { background-color: #0f172a; }
+            50% { background-color: #ef4444; }
+        }
+
+        /* Botões */
         .btn-start { background: linear-gradient(to bottom, #ef4444, #b91c1c); box-shadow: 0 4px 0 #7f1d1d; }
         .btn-start:active { transform: translateY(4px); box-shadow: 0 0 0 #7f1d1d; }
         .btn-join { background: linear-gradient(to bottom, #3b82f6, #1d4ed8); box-shadow: 0 4px 0 #1e3a8a; }
         .btn-join:active { transform: translateY(4px); box-shadow: 0 0 0 #1e3a8a; }
 
-        /* Controles Mobile Grandes */
+        /* Controles Mobile */
         .touch-area {
-            position: absolute; bottom: 10px; width: 45%; height: 180px; 
+            position: absolute; bottom: 20px; width: 40%; height: 160px; 
             border-radius: 20px; border: 2px solid rgba(255,255,255,0.1);
             background: rgba(255,255,255,0.05); pointer-events: auto;
             display: flex; align-items: center; justify-content: center;
         }
         .touch-area:active { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); }
-        #btn-left { left: 10px; }
-        #btn-right { right: 10px; }
-        .arrow { font-size: 60px; color: rgba(255,255,255,0.3); user-select: none; }
+        #btn-left { left: 20px; }
+        #btn-right { right: 20px; }
+        .arrow { font-size: 50px; color: rgba(255,255,255,0.4); }
+
+        /* UI Overlay */
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; }
+        .interactive { pointer-events: auto; }
     </style>
 </head>
-<body>
+<body id="body">
+
+    <!-- ÁUDIOS (Link direto para arquivos MP3) -->
+    <!-- Música Phonk (Exemplo Royalty Free similar) -->
+    <audio id="bgm" loop>
+        <source src="https://od.lk/s/OTFfMjk5NjY2MzRf/phonk_drift_energy.mp3" type="audio/mpeg">
+    </audio>
+    <!-- Som de Checkpoint -->
+    <audio id="sfx-lap">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" type="audio/mpeg">
+    </audio>
+    <!-- Som de Crash/Fail -->
+    <audio id="sfx-crash">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" type="audio/mpeg">
+    </audio>
 
     <!-- LOBBY -->
-    <div id="lobby" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-4 text-white">
-        <h1 class="text-5xl font-black italic tracking-tighter mb-2 text-yellow-400">SUPER RACHA</h1>
-        <p class="text-slate-400 mb-8 text-center text-sm">Versão Otimizada Mobile</p>
+    <div id="lobby" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-4 text-white interactive">
+        <h1 class="text-5xl font-black italic tracking-tighter mb-2 text-yellow-400 neon-text">RACHA PHONK</h1>
+        <p class="text-slate-400 mb-8 text-center text-sm">Saiu da pista = RESET GERAL</p>
         
-        <div class="bg-slate-800 p-6 rounded-2xl w-full max-w-sm border border-slate-700 shadow-xl">
-            <div id="status-dot" class="w-3 h-3 rounded-full bg-red-500 absolute top-6 right-6 animate-pulse"></div>
+        <div class="bg-slate-800 p-6 rounded-2xl w-full max-w-sm border border-slate-700 shadow-xl relative">
+            <div id="status-dot" class="w-3 h-3 rounded-full bg-red-500 absolute top-6 right-6 animate-pulse" title="Status Conexão"></div>
             
-            <label class="text-xs text-slate-400 uppercase font-bold ml-1">Seu Nome</label>
-            <input type="text" id="username" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 mb-6 text-white font-bold outline-none focus:border-yellow-500 uppercase" placeholder="DIGITE SEU NOME...">
+            <label class="text-xs text-slate-400 uppercase font-bold ml-1">Seu Piloto</label>
+            <input type="text" id="username" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 mb-6 text-white font-bold outline-none focus:border-yellow-500 uppercase" placeholder="APELIDO...">
 
             <div class="flex flex-col gap-3">
                 <button onclick="startGame(1)" class="btn-start text-white font-black py-4 rounded-xl text-xl w-full interactive">
@@ -53,32 +76,33 @@
                     ENTRAR (P2)
                 </button>
             </div>
-            <p class="mt-4 text-[10px] text-center text-slate-500">
-                O Player 1 deve criar a sala primeiro.<br>Certifiquem-se de que ambos estão conectados.
-            </p>
+            
+            <div class="mt-4 flex items-center justify-center gap-2">
+                <input type="checkbox" id="music-toggle" checked class="w-4 h-4">
+                <label for="music-toggle" class="text-xs text-slate-400">Ativar Música (Phonk)</label>
+            </div>
         </div>
     </div>
 
-    <!-- HUD (PLACAR) -->
+    <!-- HUD -->
     <div id="game-ui" class="ui-layer hidden">
-        <!-- Topo: Placar -->
-        <div class="flex justify-between w-full max-w-2xl mx-auto">
+        <div class="flex justify-between w-full max-w-2xl mx-auto pt-2">
             <div class="bg-slate-900/90 border-l-4 border-red-500 p-2 rounded w-24 text-center shadow-lg">
                 <div class="text-[10px] text-red-400 font-bold">P1</div>
-                <div id="p1-laps" class="text-2xl font-black text-white">0/10</div>
+                <div id="p1-laps" class="text-2xl font-black text-white">0</div>
             </div>
 
             <div class="flex flex-col items-center pt-2">
-                <div id="game-msg" class="text-yellow-400 font-bold text-lg shadow-black drop-shadow-md animate-pulse">AGUARDANDO...</div>
+                <div id="game-msg" class="text-yellow-400 font-bold text-lg drop-shadow-md animate-pulse">AGUARDANDO...</div>
             </div>
 
             <div class="bg-slate-900/90 border-r-4 border-blue-500 p-2 rounded w-24 text-center shadow-lg">
                 <div class="text-[10px] text-blue-400 font-bold">P2</div>
-                <div id="p2-laps" class="text-2xl font-black text-white">0/10</div>
+                <div id="p2-laps" class="text-2xl font-black text-white">0</div>
             </div>
         </div>
 
-        <!-- Controles Touch (Só visiveis no mobile) -->
+        <!-- Controles Touch -->
         <div id="mobile-controls" class="hidden w-full h-full pointer-events-none">
             <div id="btn-left" class="touch-area"><span class="arrow">◄</span></div>
             <div id="btn-right" class="touch-area"><span class="arrow">►</span></div>
@@ -92,7 +116,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- CONFIGURAÇÃO FIREBASE (A SUA CONFIGURAÇÃO) ---
+        // --- CONFIGURAÇÃO ---
         const firebaseConfig = {
             apiKey: "AIzaSyBfVOCuakSWtU6O_d_XstGoDpAg8fC2_n4",
             authDomain: "jogo-de-2-169d9.firebaseapp.com",
@@ -106,62 +130,74 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // --- ÁUDIO ---
+        const bgm = document.getElementById('bgm');
+        const sfxLap = document.getElementById('sfx-lap');
+        const sfxCrash = document.getElementById('sfx-crash');
+        bgm.volume = 0.4; // Volume da música (0.0 a 1.0)
+
         // --- VARIÁVEIS DO JOGO ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const body = document.getElementById('body');
         
-        // Dimensões Virtuais (O jogo sempre "acha" que tem esse tamanho, depois a gente estica ou encolhe)
         const VIRTUAL_WIDTH = 800;
         const VIRTUAL_HEIGHT = 800;
+        const TRACK_RADIUS = 320;
+        const TRACK_WIDTH = 100; // Pista tem ~100px de largura
         
-        let myId = 0; // 1 ou 2
+        // Limites de Segurança (Para saber se saiu da pista)
+        // Raio do centro até a borda interna da grama e borda externa
+        const SAFE_INNER = TRACK_RADIUS - (TRACK_WIDTH/2) - 10; // ~260
+        const SAFE_OUTER = TRACK_RADIUS + (TRACK_WIDTH/2) + 10; // ~380
+        
+        let myId = 0; 
         let isReady = false;
         let scaleFactor = 1;
+        let lastCrashTime = 0; // Evitar loop de crashs
 
-        // Física Arcade Ajustada
-        const MAX_SPEED = 7.0;     // Velocidade máxima menor para controle
-        const ACCEL = 0.2;         // Aceleração suave
-        const TURN_SPEED = 0.08;   // Curva
-        const FRICTION = 0.96;     // Carro para rápido se soltar
-        const TRACK_RADIUS = 320;
+        // Física
+        const MAX_SPEED = 7.5;
+        const ACCEL = 0.25;
+        const TURN_SPEED = 0.09;
+        const FRICTION = 0.96;
 
-        // Estado do Jogo
         const state = {
-            p1: { x: 0, y: 0, angle: 0, speed: 0, laps: 0, lastLapAngle: 0, name: 'P1' },
-            p2: { x: 0, y: 0, angle: 0, speed: 0, laps: 0, lastLapAngle: 0, name: 'P2' },
-            status: 'WAITING', // WAITING, RACING, FINISHED
-            winner: null
+            p1: { x: 0, y: 0, angle: 0, speed: 0, laps: 0, name: 'P1' },
+            p2: { x: 0, y: 0, angle: 0, speed: 0, laps: 0, name: 'P2' },
+            status: 'WAITING',
+            winner: null,
+            lastCrash: 0 // Timestamp do ultimo crash global
         };
 
-        // Inputs
-        const keys = { left: false, right: false, up: false, down: false };
+        const keys = { left: false, right: false, up: false };
 
-        // --- SISTEMA DE CÂMERA / RESIZE ---
+        // --- SISTEMA DE RESIZE (CÂMERA) ---
         function resize() {
-            // Ajusta o canvas para o tamanho da janela
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            
-            // Calcula o menor fator de escala para caber TUDO na tela
             const scaleX = window.innerWidth / VIRTUAL_WIDTH;
             const scaleY = window.innerHeight / VIRTUAL_HEIGHT;
-            scaleFactor = Math.min(scaleX, scaleY) * 0.95; // 95% para deixar margem
+            scaleFactor = Math.min(scaleX, scaleY) * 0.95;
         }
         window.addEventListener('resize', resize);
         resize();
 
-        // --- AUTENTICAÇÃO ---
+        // --- AUTH ---
         signInAnonymously(auth).catch(console.error);
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('status-dot').classList.replace('bg-red-500', 'bg-green-500');
-            }
+            if (user) document.getElementById('status-dot').classList.replace('bg-red-500', 'bg-green-500');
         });
 
-        // --- CONTROLES ---
+        // --- INICIAR JOGO ---
         window.startGame = async (id) => {
             const nameInput = document.getElementById('username').value.trim();
-            if (!nameInput) return alert("BOTA UM NOME AÍ, CAMPEÃO!");
+            if (!nameInput) return alert("DIGITE UM NOME!");
+
+            // Tocar Música
+            if (document.getElementById('music-toggle').checked) {
+                bgm.play().catch(e => console.log("Interaja para tocar música"));
+            }
             
             myId = id;
             document.getElementById('lobby').classList.add('hidden');
@@ -171,27 +207,19 @@
                 document.getElementById('mobile-controls').classList.remove('hidden');
             }
 
-            // Posição Inicial
-            resetPosition(myId);
-            
-            // Inicializar no Banco
-            const docRef = doc(db, 'corridas', 'sala_unica');
-            
-            const myData = {
-                x: state[`p${myId}`].x,
-                y: state[`p${myId}`].y,
-                angle: state[`p${myId}`].angle,
-                laps: 0,
-                name: nameInput
-            };
+            resetMyPosition();
 
-            // Se for P1, limpa o status. Se for P2, inicia a corrida.
+            // Setup Inicial no Banco
+            const docRef = doc(db, 'corridas', 'sala_unica');
+            const myData = { ...state[`p${myId}`], name: nameInput };
+
             if (myId === 1) {
                 await setDoc(docRef, { 
                     p1: myData, 
                     status: 'WAITING',
-                    winner: null
-                }, { merge: true }); // Merge true para não apagar P2 se ele já estiver tentando conectar
+                    winner: null,
+                    lastCrash: 0
+                }, { merge: true });
             } else {
                 await setDoc(docRef, { 
                     p2: myData, 
@@ -202,29 +230,20 @@
             isReady = true;
             setupListener();
             requestAnimationFrame(loop);
-            
-            // Loop de Envio de Dados (20x por segundo)
             setInterval(sendData, 50);
         };
 
-        function resetPosition(id) {
-            // P1 Esquerda, P2 Direita, ambos na parte de baixo da pista
-            const startY = VIRTUAL_HEIGHT/2 + TRACK_RADIUS - 40;
-            if (id === 1) {
-                state.p1.x = VIRTUAL_WIDTH/2 - 30;
-                state.p1.y = startY;
-                state.p1.angle = 0; // Direita
-                state.p1.laps = -1;
-            } else {
-                state.p2.x = VIRTUAL_WIDTH/2 + 30;
-                state.p2.y = startY;
-                state.p2.angle = 0;
-                state.p2.laps = -1;
-            }
+        function resetMyPosition() {
+            const startY = VIRTUAL_HEIGHT/2 + TRACK_RADIUS - 40; // Linha de chegada (baixo)
+            const p = state[`p${myId}`];
+            p.x = (myId === 1) ? VIRTUAL_WIDTH/2 - 30 : VIRTUAL_WIDTH/2 + 30;
+            p.y = startY;
+            p.angle = 0; 
+            p.speed = 0;
+            // laps não reseta aqui para não bugar no meio do loop, só reseta no crash global
         }
 
         // --- INPUTS ---
-        // Teclado
         window.addEventListener('keydown', e => {
             if(e.key === 'ArrowLeft') keys.left = true;
             if(e.key === 'ArrowRight') keys.right = true;
@@ -236,79 +255,84 @@
             if(e.key === 'ArrowUp') keys.up = false;
         });
 
-        // Touch (Celular)
+        // Touch
         const btnLeft = document.getElementById('btn-left');
         const btnRight = document.getElementById('btn-right');
-        
         const handleTouch = (dir, active) => {
             if(dir === 'left') keys.left = active;
             if(dir === 'right') keys.right = active;
-            keys.up = (keys.left || keys.right); // Acelera automático se estiver virando
+            keys.up = (keys.left || keys.right); 
         };
-
         btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('left', true); });
         btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); handleTouch('left', false); });
         btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('right', true); });
         btnRight.addEventListener('touchend', (e) => { e.preventDefault(); handleTouch('right', false); });
 
-        // --- LÓGICA DO JOGO ---
+        // --- LÓGICA PRINCIPAL ---
         function updatePhysics() {
-            // Só calculamos a física do NOSSO carro. O do inimigo vem da internet.
             const p = state[`p${myId}`];
             
-            // Aceleração
-            if (keys.up) {
-                p.speed += ACCEL;
-            }
-            
-            // Atrito natural
+            if (keys.up) p.speed += ACCEL;
             p.speed *= FRICTION;
-
-            // Limite
             if (p.speed > MAX_SPEED) p.speed = MAX_SPEED;
             
-            // Curva (carro só vira se estiver andando um pouco)
             if (Math.abs(p.speed) > 0.1) {
                 if (keys.left) p.angle -= TURN_SPEED;
                 if (keys.right) p.angle += TURN_SPEED;
             }
 
-            // Movimento
             p.x += Math.cos(p.angle) * p.speed;
             p.y += Math.sin(p.angle) * p.speed;
 
-            // Colisão com Bordas (Punição de velocidade)
+            // --- VERIFICAÇÃO DE SAÍDA DE PISTA (CRASH) ---
             const dx = p.x - VIRTUAL_WIDTH/2;
             const dy = p.y - VIRTUAL_HEIGHT/2;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            
-            // Pista tem raio 320. Largura da pista aprox 120.
-            // Área segura: Entre 260 e 380 de distância do centro
-            if (dist < 260 || dist > 380) {
-                p.speed *= 0.85; // Grama reduz muito a velocidade
+
+            // Se saiu da área segura (muito perto do centro ou muito longe)
+            // E o jogo está valendo
+            if (state.status === 'RACING' && (dist < SAFE_INNER || dist > SAFE_OUTER)) {
+                triggerGlobalReset();
+                return;
             }
 
-            // Contagem de Voltas
             checkLaps(p);
+        }
+
+        // Função que aciona o reset para TODO MUNDO
+        async function triggerGlobalReset() {
+            // Debounce local para não spammar
+            if (Date.now() - lastCrashTime < 2000) return;
+            lastCrashTime = Date.now();
+
+            console.log("CRASH! Resetando tudo...");
+            
+            // Reseta posição localmente para parar de bater
+            resetMyPosition();
+            
+            // Avisa o servidor
+            const docRef = doc(db, 'corridas', 'sala_unica');
+            await updateDoc(docRef, {
+                status: 'CRASHED',
+                lastCrash: Date.now(), // Timestamp força atualização
+                'p1.laps': 0,
+                'p2.laps': 0
+            });
         }
 
         function checkLaps(player) {
             const cx = VIRTUAL_WIDTH/2;
             const cy = VIRTUAL_HEIGHT/2;
             
-            // Ângulo atual em relação ao centro da pista
-            const currentAngle = Math.atan2(player.y - cy, player.x - cx);
-            
-            // Detectar passagem pela linha de chegada (em baixo, ângulo positivo ~1.57 rad)
-            // Lógica simples: Se cruzou o eixo Y positivo
-            if (player.y > cy + 200) { // Está na parte de baixo
-                 // Se x passou de negativo (esquerda) para positivo (direita) = Sentido Anti-Horário
-                 // Vamos usar uma verificação de "Gate" simples
+            // Linha de chegada no bottom (Y > cy + 200)
+            if (player.y > cy + 200) { 
                  const wasLeft = (player.x - Math.cos(player.angle)*player.speed) < cx;
                  const isRight = player.x >= cx;
                  
                  if (wasLeft && isRight) {
                      player.laps++;
+                     sfxLap.currentTime = 0;
+                     sfxLap.play(); // Toca som
                      updateMyScore();
                  }
             }
@@ -316,11 +340,10 @@
 
         async function updateMyScore() {
             const el = document.getElementById(`p${myId}-laps`);
-            const currentLaps = Math.max(0, state[`p${myId}`].laps);
-            el.innerText = `${currentLaps}/10`;
+            const laps = Math.max(0, state[`p${myId}`].laps);
+            el.innerText = laps;
 
-            if (currentLaps >= 10 && state.status !== 'FINISHED') {
-                // GANHOU!
+            if (laps >= 10 && state.status !== 'FINISHED') {
                 await updateDoc(doc(db, 'corridas', 'sala_unica'), {
                     status: 'FINISHED',
                     winner: myId
@@ -330,52 +353,65 @@
 
         // --- DESENHO ---
         function draw() {
-            // Limpa tudo
             ctx.fillStyle = '#0f172a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Salva contexto para aplicar escala e centralização
             ctx.save();
-            
-            // Centraliza o canvas virtual no meio da tela real
             const offsetX = (canvas.width - VIRTUAL_WIDTH * scaleFactor) / 2;
             const offsetY = (canvas.height - VIRTUAL_HEIGHT * scaleFactor) / 2;
             ctx.translate(offsetX, offsetY);
             ctx.scale(scaleFactor, scaleFactor);
 
-            // Desenha Pista
             const cx = VIRTUAL_WIDTH/2;
             const cy = VIRTUAL_HEIGHT/2;
 
-            // Grama Borda Externa
+            // Borda Externa (Onde morre se passar)
             ctx.beginPath();
-            ctx.arc(cx, cy, TRACK_RADIUS + 60, 0, Math.PI*2);
-            ctx.fillStyle = '#166534'; // Verde Escuro
+            ctx.arc(cx, cy, SAFE_OUTER, 0, Math.PI*2);
+            ctx.fillStyle = '#b91c1c'; // Vermelho escuro (PERIGO)
+            ctx.fill();
+
+            // Grama Externa (Segura visualmente, mas o crash é no limite)
+            ctx.beginPath();
+            ctx.arc(cx, cy, TRACK_RADIUS + 50, 0, Math.PI*2);
+            ctx.fillStyle = '#334155'; // Asfalto Borda
             ctx.fill();
 
             // Asfalto
             ctx.beginPath();
             ctx.arc(cx, cy, TRACK_RADIUS + 50, 0, Math.PI*2);
-            ctx.fillStyle = '#334155'; // Cinza Pista
+            ctx.fillStyle = '#334155'; 
             ctx.fill();
-
-            // Grama Centro (Buraco)
+            
+            // Pista Real
             ctx.beginPath();
-            ctx.arc(cx, cy, TRACK_RADIUS - 50, 0, Math.PI*2);
-            ctx.fillStyle = '#0f172a'; // Cor de fundo
+            ctx.arc(cx, cy, TRACK_RADIUS + 45, 0, Math.PI*2);
+            ctx.arc(cx, cy, TRACK_RADIUS - 45, 0, Math.PI*2, true); // Buraco
+            ctx.fillStyle = '#475569'; // Cinza Pista
             ctx.fill();
 
-            // Linha de Chegada (Em baixo)
+            // Buraco Central (Onde morre se entrar)
+            ctx.beginPath();
+            ctx.arc(cx, cy, SAFE_INNER, 0, Math.PI*2);
+            ctx.fillStyle = '#b91c1c'; // Vermelho escuro (PERIGO)
+            ctx.fill();
+            
+            // Fundo Central
+            ctx.beginPath();
+            ctx.arc(cx, cy, SAFE_INNER - 10, 0, Math.PI*2);
+            ctx.fillStyle = '#0f172a'; 
+            ctx.fill();
+
+            // Linha Chegada
             ctx.lineWidth = 10;
-            ctx.strokeStyle = '#fbbf24'; // Amarelo
+            ctx.strokeStyle = '#fbbf24'; 
             ctx.beginPath();
             ctx.moveTo(cx, cy + TRACK_RADIUS - 50);
             ctx.lineTo(cx, cy + TRACK_RADIUS + 50);
             ctx.stroke();
 
-            // Carros
-            drawCar(state.p1, '#ef4444'); // Vermelho
-            drawCar(state.p2, '#3b82f6'); // Azul
+            drawCar(state.p1, '#ef4444'); 
+            drawCar(state.p2, '#3b82f6'); 
 
             ctx.restore();
         }
@@ -384,20 +420,22 @@
             ctx.save();
             ctx.translate(player.x, player.y);
             ctx.rotate(player.angle);
-
+            
             // Sombra
             ctx.fillStyle = 'rgba(0,0,0,0.5)';
             ctx.fillRect(-12, -8, 24, 16);
-
+            
             // Corpo
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.roundRect(-10, -18, 20, 36, 4); // x, y, w, h, radius
+            ctx.roundRect(-10, -18, 20, 36, 4);
             ctx.fill();
 
-            // Vidro
-            ctx.fillStyle = '#000';
-            ctx.fillRect(-8, -5, 16, 10);
+            // Luz de Freio (se estiver parado)
+            if (player.speed < 0.5) {
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(-8, 18, 16, 2);
+            }
 
             // Farol
             ctx.fillStyle = '#fbbf24';
@@ -405,12 +443,12 @@
             ctx.fillRect(-10, -18, 4, 3);
 
             ctx.restore();
-
+            
             // Nome
             ctx.fillStyle = 'white';
             ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(player.name || '', player.x, player.y - 25);
+            ctx.fillText(player.name || '', player.x, player.y - 30);
         }
 
         function loop() {
@@ -420,71 +458,85 @@
             requestAnimationFrame(loop);
         }
 
-        // --- REDE (SYNC) ---
+        // --- REDE ---
         async function sendData() {
             if (!isReady) return;
-            
             const myPlayer = state[`p${myId}`];
             const docRef = doc(db, 'corridas', 'sala_unica');
-
-            // Enviamos apenas o necessário
             const payload = {};
             payload[`p${myId}`] = {
-                x: Math.round(myPlayer.x), // Arredondar economiza banda
+                x: Math.round(myPlayer.x),
                 y: Math.round(myPlayer.y),
                 angle: parseFloat(myPlayer.angle.toFixed(2)),
                 laps: myPlayer.laps,
                 name: myPlayer.name
             };
-
-            try {
-                await updateDoc(docRef, payload);
-            } catch (e) {
-                // Erros silenciosos de rede são normais em jogos
-            }
+            try { await updateDoc(docRef, payload); } catch (e) {}
         }
 
         function setupListener() {
             onSnapshot(doc(db, 'corridas', 'sala_unica'), (snap) => {
                 if (!snap.exists()) return;
                 const data = snap.data();
-
-                // Atualizar Status Global
-                state.status = data.status || 'WAITING';
-                const statusEl = document.getElementById('game-msg');
                 
-                if (state.status === 'WAITING') {
-                    statusEl.innerText = "ESPERANDO JOGADOR...";
-                    statusEl.className = "text-yellow-400 font-bold text-lg animate-pulse";
-                } else if (state.status === 'RACING') {
-                    statusEl.innerText = "CORRIDA VALENDO!";
-                    statusEl.className = "text-green-500 font-bold text-lg";
-                } else if (state.status === 'FINISHED') {
-                    const w = data.winner === 1 ? 'VERMELHO' : 'AZUL';
-                    statusEl.innerText = `${w} VENCEU!`;
-                    statusEl.className = "text-white font-black text-2xl neon-text animate-bounce";
+                // DETECÇÃO DE CRASH GLOBAL
+                if (data.status === 'CRASHED' && data.lastCrash !== state.lastCrash) {
+                    state.lastCrash = data.lastCrash;
+                    
+                    // Efeito Visual e Sonoro
+                    body.classList.add('crash-flash');
+                    sfxCrash.play();
+                    setTimeout(() => body.classList.remove('crash-flash'), 500);
+
+                    // Reset Local
+                    state.p1.laps = 0;
+                    state.p2.laps = 0;
+                    resetMyPosition();
+                    
+                    // Aviso
+                    const msg = document.getElementById('game-msg');
+                    msg.innerText = "CRASH! RESET!";
+                    msg.className = "text-red-500 font-black text-2xl animate-ping";
+                    
+                    // Se eu for o Host (P1), volto o status para RACING depois de 2s
+                    if (myId === 1) {
+                        setTimeout(() => {
+                            updateDoc(doc(db, 'corridas', 'sala_unica'), { status: 'RACING' });
+                        }, 2000);
+                    }
                 }
 
-                // Atualizar O INIMIGO (Nunca eu mesmo)
+                if (data.status !== 'CRASHED') {
+                    state.status = data.status || 'WAITING';
+                    const statusEl = document.getElementById('game-msg');
+                    
+                    if (state.status === 'RACING') {
+                        statusEl.innerText = "ACELERA!";
+                        statusEl.className = "text-green-500 font-bold text-lg";
+                    } else if (state.status === 'FINISHED') {
+                        const w = data.winner === 1 ? 'VERMELHO' : 'AZUL';
+                        statusEl.innerText = `${w} VENCEU!`;
+                        statusEl.className = "text-white font-black text-2xl neon-text animate-bounce";
+                    }
+                }
+
+                // Atualizar Inimigo
                 const enemyId = myId === 1 ? 2 : 1;
                 const enemyKey = `p${enemyId}`;
                 const enemyData = data[enemyKey];
-
                 if (enemyData) {
-                    // Atualização direta sem interpolação complexa para evitar "ghosting" errado
-                    // num jogo simples, é melhor ver ele "pular" pro lugar certo do que ver ele suavemente indo pro lugar errado
                     state[enemyKey].x = enemyData.x;
                     state[enemyKey].y = enemyData.y;
                     state[enemyKey].angle = enemyData.angle;
                     state[enemyKey].name = enemyData.name;
                     state[enemyKey].laps = enemyData.laps;
-
-                    // Atualiza placar do inimigo
-                    document.getElementById(`${enemyKey}-laps`).innerText = `${Math.max(0, enemyData.laps)}/10`;
+                    document.getElementById(`${enemyKey}-laps`).innerText = enemyData.laps;
                 }
+                
+                // Atualiza meu placar (caso tenha sido resetado pelo servidor)
+                document.getElementById(`p${myId}-laps`).innerText = state[`p${myId}`].laps;
             });
         }
-
     </script>
 </body>
 </html>
